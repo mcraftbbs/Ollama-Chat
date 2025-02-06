@@ -1,0 +1,11 @@
+name: ollamachat
+version: '1.0'
+main: com.ollamachat.Ollamachat
+api-version: '1.21'
+authors: [ xwwsdd ]
+description: A plugin used to connect Ollama with Minecraft.
+website: https://forum.sarskin.cn/
+commands:
+  ollamareload:
+    description: Reload plugin configuration
+    usage: /ollamareload

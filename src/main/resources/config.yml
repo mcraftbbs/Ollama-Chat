@@ -1,0 +1,10 @@
+# Ollama API
+ollama-api-url: "http://localhost:11434/api/generate"
+model: "llama3"
+
+# Chat
+trigger-prefix: "@bot "
+response-prefix: "§b[AI] §r"
+
+# Length
+max-response-length: 500
