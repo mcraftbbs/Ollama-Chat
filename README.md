@@ -1,5 +1,7 @@
 # Ollama-Chat
 
+[![Download](https://github.com/gabrielvicenteYT/modrinth-icons/blob/main/Branding/Badge/badge-dark.svg)](https://modrinth.com/plugin/ollama-chat)
+
 ## Overview
 
 **Ollama-Chat** is a cutting-edge Minecraft plugin that brings the power of Ollama and other AI models directly into your Minecraft world. This plugin enables players to interact with AI in real-time, creating a unique and immersive gameplay experience. Whether you want to chat with an AI companion, ask questions, or simply explore the capabilities of AI, Ollama-Chat makes it possible within the Minecraft universe.
