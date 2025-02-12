@@ -1,6 +1,7 @@
 # Ollama API
 ollama-api-url: "http://localhost:11434/api/generate"
 model: "llama3"
+ollama-enabled: true
 
 # Chat
 trigger-prefix: "@bot "
@@ -8,3 +9,14 @@ response-prefix: "§b[AI] §r"
 
 # Length
 max-response-length: 500
+
+# Language Settings
+language: "en"
+
+# Other AI Configurations
+other-ai-configs:
+  openai:
+    api-url: "https://api.openai.com/v1/chat/completions"
+    api-key: "your-openai-api-key"
+    model: "gpt-4"
+    enabled: true

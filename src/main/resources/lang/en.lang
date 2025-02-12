@@ -1,0 +1,13 @@
+# General messages
+reload-success: "§aConfiguration reloaded."
+toggle-enabled: "§a{ai-name} is now enabled."
+toggle-disabled: "§a{ai-name} is now disabled."
+invalid-ai-name: "§cInvalid AI name. Available AIs: {ai-list}."
+usage-aichat: "§cUsage: /aichat <ai-name> <prompt>"
+player-only: "§cThis command can only be used by players."
+ollama-enabled: "§aOllama is now enabled."
+ollama-disabled: "§aOllama is now disabled."
+
+# Chat interaction
+response-prefix: "§b[AI] §r"
+error-prefix: "§c[Error] §r"

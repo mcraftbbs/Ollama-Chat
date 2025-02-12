@@ -1,11 +1,27 @@
 name: ollamachat
-version: '1.0'
+version: '1.0.1'
 main: com.ollamachat.Ollamachat
 api-version: '1.21'
-authors: [ xwwsdd ]
+authors: [xwwsdd]
 description: A plugin used to connect Ollama with Minecraft.
-website: https://forum.sarskin.cn/
+website: https://chat.sarskin.cn/invite/iHgI6LTX
+
 commands:
-  ollamareload:
-    description: Reload plugin configuration
-    usage: /ollamareload
+  ollamachat:
+    description: Manage OllamaChat plugin (reload configuration or toggle AI)
+    usage: |
+      /ollamachat reload - Reload the plugin configuration
+      /ollamachat toggle <ai-name> - Enable or disable an AI service
+    permission: ollamachat.admin
+  aichat:
+    description: Interact with other AI services
+    usage: /aichat <ai-name> <prompt>
+    permission: ollamachat.use
+
+permissions:
+  ollamachat.admin:
+    description: Allows managing the plugin (reload and toggle AI)
+    default: op
+  ollamachat.use:
+    description: Allows using the /aichat command
+    default: true

@@ -1,0 +1,13 @@
+# 通用消息
+reload-success: "§a配置已重新加载。"
+toggle-enabled: "§a{ai-name} 已启用。"
+toggle-disabled: "§a{ai-name} 已禁用。"
+invalid-ai-name: "§c无效的 AI 名称。可用的 AI: {ai-list}。"
+usage-aichat: "§c用法: /aichat <ai名称> <提示>"
+player-only: "§c该命令只能由玩家使用。"
+ollama-enabled: "§aOllama 已启用。"
+ollama-disabled: "§aOllama 已禁用。"
+
+# 聊天交互
+response-prefix: "§b[AI] §r"
+error-prefix: "§c[错误] §r"
