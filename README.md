@@ -41,8 +41,7 @@ To interact with the AI, simply type `@bot` followed by your message in the Mine
 1. **Download the Plugin**: Obtain the latest version of **Ollama-Chat** from the [official repository](https://github.com/mcraftbbs/Ollama-Chat).
 2. **Install the Plugin**: Place the downloaded `.jar` file into the `plugins` folder of your Minecraft server.
 3. **Configure the Plugin**: Modify the `config.yml` file to customize AI settings.
-4. **Add Language Files**: Place language files (e.g., `en.lang`, `zh_cn.lang`) in the `lang` folder.
-5. **Reload the Plugin**: Use the `/ollamachat reload` command to apply any configuration changes.
+4. **Reload the Plugin**: Use the `/ollamachat reload` command to apply any configuration changes.
 
 ## Configuration
 
