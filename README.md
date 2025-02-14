@@ -88,8 +88,3 @@ For assistance, questions, or feedback, please visit our [GitHub repository](htt
 ---
 
 **Note**: **Ollama-Chat** is actively developed, with new features and improvements being added regularly. Stay tuned for updates!
-```
-
----
-
-**Note**: **Ollama-Chat** is actively developed, with new features and improvements being added regularly. Stay tuned for updates!
