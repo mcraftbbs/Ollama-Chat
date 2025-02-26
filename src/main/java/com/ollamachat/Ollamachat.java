@@ -44,6 +44,8 @@ public class Ollamachat extends JavaPlugin implements Listener {
         String language = getConfig().getString("language", "en");
         loadLanguageFile(language);
 
+        updateCommandUsages();
+
         databaseManager = new DatabaseManager();
         maxHistory = getConfig().getInt("max-history", 5);
         chatHistoryManager = new ChatHistoryManager(databaseManager, maxHistory);
@@ -54,6 +56,14 @@ public class Ollamachat extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         getCommand("ollamachat").setExecutor(this);
         getCommand("aichat").setExecutor(this);
+    }
+
+    private void updateCommandUsages() {
+        String usageOllamachat = getMessage("usage-ollamachat", null);
+        String usageAichat = getMessage("usage-aichat", null);
+
+        getCommand("ollamachat").setUsage(usageOllamachat);
+        getCommand("aichat").setUsage(usageAichat);
     }
 
     @Override
@@ -81,6 +91,24 @@ public class Ollamachat extends JavaPlugin implements Listener {
     }
 
     private void reloadConfigValues() {
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig(); // 如果配置文件不存在，保存默认配置
+        } else {
+            try {
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+                if (!config.contains("ollama-api-url") || !config.contains("model")) {
+                    getLogger().warning(getMessage("config-invalid", null));
+                    configFile.delete();
+                    saveDefaultConfig();
+                }
+            } catch (Exception e) {
+                getLogger().severe(getMessage("config-load-failed", Map.of("error", e.getMessage())));
+                configFile.delete();
+                saveDefaultConfig();
+            }
+        }
+
         reloadConfig();
         updateConfig();
 
