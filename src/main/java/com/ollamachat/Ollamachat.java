@@ -93,7 +93,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private void reloadConfigValues() {
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
-            saveDefaultConfig(); // 如果配置文件不存在，保存默认配置
+            saveDefaultConfig(); 
         } else {
             try {
                 YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
