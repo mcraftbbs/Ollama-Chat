@@ -1,3 +1,5 @@
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
+
 # Ollama-Chat
 
 [![Download](https://github.com/gabrielvicenteYT/modrinth-icons/blob/main/Branding/Badge/badge-dark.svg)](https://modrinth.com/plugin/ollama-chat)
