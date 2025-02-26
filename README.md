@@ -61,8 +61,11 @@ response-prefix: "§b[AI] §r"
 # Length
 max-response-length: 500
 
+# History
+max-history: 5
+
 # Language Settings
-language: "en"  # Default language (en or zh_cn)
+language: "en" # Default language (en or zh_cn)
 
 # Other AI Configurations
 other-ai-configs:
