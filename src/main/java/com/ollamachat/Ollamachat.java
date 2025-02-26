@@ -214,18 +214,15 @@ public class Ollamachat extends JavaPlugin implements Listener {
         });
     }
 
-    // 新增方法：解析不同AI的响应
     private String parseAIResponse(String aiName, String responseBody) {
         switch (aiName.toLowerCase()) {
             case "openai":
-                // OpenAI 响应结构示例：{"choices": [{"message": {"content": "..."}}]}
                 JsonObject json = gson.fromJson(responseBody, JsonObject.class);
                 return json.getAsJsonArray("choices")
                         .get(0).getAsJsonObject()
                         .get("message").getAsJsonObject()
                         .get("content").getAsString();
             default:
-                // 默认解析为 Ollama 格式
                 return gson.fromJson(responseBody, OllamaResponse.class).response;
         }
     }
