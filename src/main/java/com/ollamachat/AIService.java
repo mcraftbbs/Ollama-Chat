@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -21,9 +23,16 @@ public class AIService {
     public CompletableFuture<String> sendRequest(String apiUrl, String apiKey, String model, String prompt) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                // 按照OpenAI Chat API要求构造messages数组
+                List<Map<String, String>> messages = new ArrayList<>();
+                messages.add(Map.of(
+                        "role", "user",
+                        "content", prompt
+                ));
+
                 Map<String, Object> requestBody = Map.of(
                         "model", model,
-                        "prompt", prompt,
+                        "messages", messages,  // 关键修改：将prompt改为messages
                         "stream", false
                 );
 
@@ -32,11 +41,8 @@ public class AIService {
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl))
                         .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + apiKey)  // 确保认证头存在
                         .POST(HttpRequest.BodyPublishers.ofString(jsonRequest));
-
-                if (apiKey != null && !apiKey.isEmpty()) {
-                    requestBuilder.header("Authorization", "Bearer " + apiKey);
-                }
 
                 HttpRequest request = requestBuilder.build();
 
@@ -56,3 +62,5 @@ public class AIService {
         });
     }
 }
+
+

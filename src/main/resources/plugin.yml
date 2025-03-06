@@ -1,5 +1,5 @@
-name: ollamachat
-version: '1.0.1'
+name: OllamaChat
+version: '1.0.2'
 main: com.ollamachat.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]
@@ -9,13 +9,11 @@ website: https://chat.sarskin.cn/invite/iHgI6LTX
 commands:
   ollamachat:
     description: Manage OllamaChat plugin (reload configuration or toggle AI)
-    usage: |
-      /ollamachat reload - Reload the plugin configuration
-      /ollamachat toggle <ai-name> - Enable or disable an AI service
+    usage: "{usage-ollamachat}"
     permission: ollamachat.admin
   aichat:
     description: Interact with other AI services
-    usage: /aichat <ai-name> <prompt>
+    usage: "{usage-aichat}"
     permission: ollamachat.use
 
 permissions:

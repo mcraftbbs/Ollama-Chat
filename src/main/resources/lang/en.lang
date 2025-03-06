@@ -4,6 +4,7 @@ toggle-enabled: "§a{ai-name} is now enabled."
 toggle-disabled: "§a{ai-name} is now disabled."
 invalid-ai-name: "§cInvalid AI name. Available AIs: {ai-list}."
 usage-aichat: "§cUsage: /aichat <ai-name> <prompt>"
+usage-ollamachat: "§cUsage: /ollamachat <reload|toggle <ai-name>>"
 player-only: "§cThis command can only be used by players."
 ollama-enabled: "§aOllama is now enabled."
 ollama-disabled: "§aOllama is now disabled."
@@ -11,3 +12,7 @@ ollama-disabled: "§aOllama is now disabled."
 # Chat interaction
 response-prefix: "§b[AI] §r"
 error-prefix: "§c[Error] §r"
+
+# Log messages
+config-invalid: "§cConfig file is invalid or incomplete. Regenerating default config..."
+config-load-failed: "§cFailed to load config file: {error}. Regenerating default config..."

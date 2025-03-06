@@ -1,6 +1,7 @@
 package com.ollamachat;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,12 +11,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class Ollamachat extends JavaPlugin implements Listener {
@@ -31,6 +33,9 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private Map<String, Boolean> otherAIEnabled;
 
     private FileConfiguration langConfig;
+    private DatabaseManager databaseManager;
+    private ChatHistoryManager chatHistoryManager;
+    private int maxHistory;
 
     @Override
     public void onEnable() {
@@ -39,12 +44,31 @@ public class Ollamachat extends JavaPlugin implements Listener {
         String language = getConfig().getString("language", "en");
         loadLanguageFile(language);
 
+        updateCommandUsages();
+
+        databaseManager = new DatabaseManager();
+        maxHistory = getConfig().getInt("max-history", 5);
+        chatHistoryManager = new ChatHistoryManager(databaseManager, maxHistory);
+
         aiService = new AIService();
         gson = new Gson();
 
         getServer().getPluginManager().registerEvents(this, this);
         getCommand("ollamachat").setExecutor(this);
         getCommand("aichat").setExecutor(this);
+    }
+
+    private void updateCommandUsages() {
+        String usageOllamachat = getMessage("usage-ollamachat", null);
+        String usageAichat = getMessage("usage-aichat", null);
+
+        getCommand("ollamachat").setUsage(usageOllamachat);
+        getCommand("aichat").setUsage(usageAichat);
+    }
+
+    @Override
+    public void onDisable() {
+        databaseManager.close();
     }
 
     private void updateConfig() {
@@ -59,11 +83,32 @@ public class Ollamachat extends JavaPlugin implements Listener {
         if (!config.contains("other-ai-configs")) {
             config.createSection("other-ai-configs");
         }
+        if (!config.contains("max-history")) {
+            config.set("max-history", 5);
+        }
 
         saveConfig();
     }
 
     private void reloadConfigValues() {
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+        } else {
+            try {
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+                if (!config.contains("ollama-api-url") || !config.contains("model")) {
+                    getLogger().warning(getMessage("config-invalid", null));
+                    configFile.delete();
+                    saveDefaultConfig();
+                }
+            } catch (Exception e) {
+                getLogger().severe(getMessage("config-load-failed", Map.of("error", e.getMessage())));
+                configFile.delete();
+                saveDefaultConfig();
+            }
+        }
+
         reloadConfig();
         updateConfig();
 
@@ -73,6 +118,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
         triggerPrefix = config.getString("trigger-prefix", "@bot ");
         maxResponseLength = config.getInt("max-response-length", 500);
         ollamaEnabled = config.getBoolean("ollama-enabled", true);
+        maxHistory = config.getInt("max-history", 5);
 
         otherAIConfigs = new HashMap<>();
         otherAIEnabled = new HashMap<>();
@@ -118,6 +164,11 @@ public class Ollamachat extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        chatHistoryManager.savePlayerInfo(event.getPlayer());
+    }
+
+    @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         if (!ollamaEnabled) return;
 
@@ -137,8 +188,15 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private void processOllamaQueryAsync(Player player, String prompt) {
         CompletableFuture.runAsync(() -> {
             try {
-                String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, prompt).join();
+                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), "ollama");
+
+                String context = history + "User: " + prompt;
+
+                String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, context).join();
                 OllamaResponse ollamaResponse = gson.fromJson(responseBody, OllamaResponse.class);
+
+                chatHistoryManager.saveChatHistory(player.getUniqueId(), "ollama", prompt, ollamaResponse.response);
+
                 sendFormattedResponse(player, ollamaResponse.response);
             } catch (Exception e) {
                 getLogger().severe("Error processing Ollama request: " + e.getMessage());
@@ -155,14 +213,46 @@ public class Ollamachat extends JavaPlugin implements Listener {
 
         CompletableFuture.runAsync(() -> {
             try {
+                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), aiName);
+
+                String context = history + "User: " + prompt;
+
                 AIConfig aiConfig = otherAIConfigs.get(aiName);
-                String responseBody = aiService.sendRequest(aiConfig.getApiUrl(), aiConfig.getApiKey(), aiConfig.getModel(), prompt).join();
-                sendFormattedResponse(player, responseBody);
+                String responseBody = aiService.sendRequest(
+                        aiConfig.getApiUrl(),
+                        aiConfig.getApiKey(),
+                        aiConfig.getModel(),
+                        context
+                ).join();
+
+                String response = parseAIResponse(aiName, responseBody);
+
+                chatHistoryManager.saveChatHistory(
+                        player.getUniqueId(),
+                        aiName,
+                        prompt,
+                        response
+                );
+
+                sendFormattedResponse(player, response);
             } catch (Exception e) {
                 getLogger().severe("Error processing " + aiName + " request: " + e.getMessage());
                 sendErrorMessage(player, getMessage("error-prefix", null) + "Failed to get response from " + aiName);
             }
         });
+    }
+
+    private String parseAIResponse(String aiName, String responseBody) {
+        switch (aiName.toLowerCase()) {
+            case "openai":
+                JsonObject json = gson.fromJson(responseBody, JsonObject.class);
+                return json.getAsJsonArray("choices")
+                        .get(0).getAsJsonObject()
+                        .get("message").getAsJsonObject()
+                        .get("content").getAsString();
+            default:
+                return gson.fromJson(responseBody, OllamaResponse.class).response;
+        }
     }
 
     private void sendFormattedResponse(Player player, String response) {

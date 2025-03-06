@@ -4,6 +4,7 @@ toggle-enabled: "§a{ai-name} 已启用。"
 toggle-disabled: "§a{ai-name} 已禁用。"
 invalid-ai-name: "§c无效的 AI 名称。可用的 AI: {ai-list}。"
 usage-aichat: "§c用法: /aichat <ai名称> <提示>"
+usage-ollamachat: "§c用法: /ollamachat <reload|toggle <ai名称>>"
 player-only: "§c该命令只能由玩家使用。"
 ollama-enabled: "§aOllama 已启用。"
 ollama-disabled: "§aOllama 已禁用。"
@@ -11,3 +12,7 @@ ollama-disabled: "§aOllama 已禁用。"
 # 聊天交互
 response-prefix: "§b[AI] §r"
 error-prefix: "§c[错误] §r"
+
+# 日志消息
+config-invalid: "§c配置文件无效或不完整，正在重新生成默认配置..."
+config-load-failed: "§c加载配置文件失败: {error}，正在重新生成默认配置..."
