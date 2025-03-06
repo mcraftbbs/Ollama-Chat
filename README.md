@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.0.1-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 
 # Ollama-Chat
 
@@ -62,6 +62,9 @@ response-prefix: "§b[AI] §r"
 
 # Length
 max-response-length: 500
+
+# History
+max-history: 5
 
 # Language Settings
 language: "en"  # Default language (en or zh_cn)
