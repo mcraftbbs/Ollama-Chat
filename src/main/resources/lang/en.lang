@@ -16,3 +16,8 @@ error-prefix: "§c[Error] §r"
 # Log messages
 config-invalid: "§cConfig file is invalid or incomplete. Regenerating default config..."
 config-load-failed: "§cFailed to load config file: {error}. Regenerating default config..."
+
+# Progress display
+generating-status: "Generating... [{progress}%]"
+complete-status: "Complete!"
+error-status: "Generation failed!"

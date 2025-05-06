@@ -16,3 +16,8 @@ error-prefix: "§c[错误] §r"
 # 日志消息
 config-invalid: "§c配置文件无效或不完整，正在重新生成默认配置..."
 config-load-failed: "§c加载配置文件失败: {error}，正在重新生成默认配置..."
+
+# 生成过程消息
+generating-status: "生成中... [{progress}%]"
+complete-status: "完成！"
+error-status: "生成失败！"

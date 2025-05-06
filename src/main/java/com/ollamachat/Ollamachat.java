@@ -3,6 +3,8 @@ package com.ollamachat;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Ollamachat extends JavaPlugin implements Listener {
 
@@ -31,11 +34,13 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private Map<String, AIConfig> otherAIConfigs;
     private boolean ollamaEnabled;
     private Map<String, Boolean> otherAIEnabled;
+    private boolean streamingEnabled;
 
     private FileConfiguration langConfig;
     private DatabaseManager databaseManager;
     private ChatHistoryManager chatHistoryManager;
     private int maxHistory;
+    private ProgressManager progressManager;
 
     @Override
     public void onEnable() {
@@ -52,6 +57,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
 
         aiService = new AIService();
         gson = new Gson();
+        progressManager = new ProgressManager(this);
 
         getServer().getPluginManager().registerEvents(this, this);
         getCommand("ollamachat").setExecutor(this);
@@ -69,6 +75,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         databaseManager.close();
+        Bukkit.getOnlinePlayers().forEach(progressManager::cleanup);
     }
 
     private void updateConfig() {
@@ -85,6 +92,9 @@ public class Ollamachat extends JavaPlugin implements Listener {
         }
         if (!config.contains("max-history")) {
             config.set("max-history", 5);
+        }
+        if (!config.contains("stream-settings")) {
+            config.set("stream-settings.enabled", true);
         }
 
         saveConfig();
@@ -119,6 +129,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
         maxResponseLength = config.getInt("max-response-length", 500);
         ollamaEnabled = config.getBoolean("ollama-enabled", true);
         maxHistory = config.getInt("max-history", 5);
+        streamingEnabled = config.getBoolean("stream-settings.enabled", true);
 
         otherAIConfigs = new HashMap<>();
         otherAIEnabled = new HashMap<>();
@@ -153,7 +164,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
         }
     }
 
-    private String getMessage(String key, Map<String, String> placeholders) {
+    String getMessage(String key, Map<String, String> placeholders) {
         String message = langConfig.getString(key, "§cMissing language key: " + key);
         if (placeholders != null) {
             for (Map.Entry<String, String> entry : placeholders.entrySet()) {
@@ -186,21 +197,58 @@ public class Ollamachat extends JavaPlugin implements Listener {
     }
 
     private void processOllamaQueryAsync(Player player, String prompt) {
+        if (getConfig().getBoolean("progress-display.enabled", true)) {
+            BarColor color = BarColor.valueOf(getConfig().getString("progress-display.color", "BLUE"));
+            BarStyle style = BarStyle.valueOf(getConfig().getString("progress-display.style", "SOLID"));
+            progressManager.startProgress(player,
+                    getConfig().getString("progress-display.title", "Generating..."),
+                    color,
+                    style
+            );
+        }
+
         CompletableFuture.runAsync(() -> {
             try {
                 String history = chatHistoryManager.getChatHistory(player.getUniqueId(), "ollama");
-
                 String context = history + "User: " + prompt;
 
-                String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, context).join();
-                OllamaResponse ollamaResponse = gson.fromJson(responseBody, OllamaResponse.class);
+                String finalResponse;
+                if (streamingEnabled) {
+                    StringBuilder fullResponse = new StringBuilder();
+                    AtomicBoolean isFirstMessage = new AtomicBoolean(true);
+                    aiService.sendStreamingRequest(ollamaApiUrl, null, ollamaModel, context, partialResponse -> {
+                        if (player.isOnline()) {
+                            String formattedPartial = partialResponse.length() > maxResponseLength
+                                    ? partialResponse.substring(0, maxResponseLength) + "..."
+                                    : partialResponse;
+                            String message = isFirstMessage.get()
+                                    ? getMessage("response-prefix", null) + formattedPartial
+                                    : formattedPartial;
+                            player.sendMessage(message);
+                            isFirstMessage.set(false);
+                            fullResponse.append(partialResponse);
+                        }
+                    }).join();
+                    finalResponse = fullResponse.toString();
+                } else {
+                    String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, context).join();
+                    OllamaResponse ollamaResponse = gson.fromJson(responseBody, OllamaResponse.class);
+                    finalResponse = ollamaResponse.response;
+                    if (player.isOnline()) {
+                        sendFormattedResponse(player, finalResponse);
+                    }
+                }
 
-                chatHistoryManager.saveChatHistory(player.getUniqueId(), "ollama", prompt, ollamaResponse.response);
-
-                sendFormattedResponse(player, ollamaResponse.response);
+                if (!finalResponse.isEmpty()) {
+                    chatHistoryManager.saveChatHistory(player.getUniqueId(), "ollama", prompt, finalResponse);
+                }
+                progressManager.complete(player);
             } catch (Exception e) {
                 getLogger().severe("Error processing Ollama request: " + e.getMessage());
-                sendErrorMessage(player, getMessage("error-prefix", null) + "Failed to get response from Ollama");
+                if (player.isOnline()) {
+                    sendErrorMessage(player, getMessage("error-prefix", null) + "Failed to get response from Ollama");
+                }
+                progressManager.error(player);
             }
         });
     }
@@ -214,7 +262,6 @@ public class Ollamachat extends JavaPlugin implements Listener {
         CompletableFuture.runAsync(() -> {
             try {
                 String history = chatHistoryManager.getChatHistory(player.getUniqueId(), aiName);
-
                 String context = history + "User: " + prompt;
 
                 AIConfig aiConfig = otherAIConfigs.get(aiName);
