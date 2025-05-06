@@ -92,6 +92,7 @@ other-ai-configs:
     api-key: "your-openai-api-key"
     model: "gpt-4"
     enabled: false
+    messages-format: true
 ```
 
 ## Contributing
