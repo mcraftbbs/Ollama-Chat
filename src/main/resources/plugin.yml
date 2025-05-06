@@ -1,5 +1,5 @@
 name: ollamachat
-version: '1.0.3'
+version: '1.0.3-hotfix'
 main: com.ollamachat.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]

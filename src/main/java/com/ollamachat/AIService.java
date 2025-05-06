@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
@@ -21,14 +22,28 @@ public class AIService {
         this.gson = new Gson();
     }
 
-    public CompletableFuture<String> sendRequest(String apiUrl, String apiKey, String model, String prompt) {
+    public CompletableFuture<String> sendRequest(String apiUrl, String apiKey, String model, String prompt, boolean isMessagesFormat) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Map<String, Object> requestBody = Map.of(
-                        "model", model,
-                        "prompt", prompt,
-                        "stream", false
-                );
+                Map<String, Object> requestBody;
+                if (isMessagesFormat) {
+                    requestBody = Map.of(
+                            "model", model,
+                            "messages", List.of(
+                                    Map.of(
+                                            "role", "user",
+                                            "content", prompt
+                                    )
+                            ),
+                            "stream", false
+                    );
+                } else {
+                    requestBody = Map.of(
+                            "model", model,
+                            "prompt", prompt,
+                            "stream", false
+                    );
+                }
 
                 String jsonRequest = gson.toJson(requestBody);
 
@@ -59,14 +74,28 @@ public class AIService {
         });
     }
 
-    public CompletableFuture<Void> sendStreamingRequest(String apiUrl, String apiKey, String model, String prompt, Consumer<String> responseConsumer) {
+    public CompletableFuture<Void> sendStreamingRequest(String apiUrl, String apiKey, String model, String prompt, Consumer<String> responseConsumer, boolean isMessagesFormat) {
         return CompletableFuture.runAsync(() -> {
             try {
-                Map<String, Object> requestBody = Map.of(
-                        "model", model,
-                        "prompt", prompt,
-                        "stream", true
-                );
+                Map<String, Object> requestBody;
+                if (isMessagesFormat) {
+                    requestBody = Map.of(
+                            "model", model,
+                            "messages", List.of(
+                                    Map.of(
+                                            "role", "user",
+                                            "content", prompt
+                                    )
+                            ),
+                            "stream", true
+                    );
+                } else {
+                    requestBody = Map.of(
+                            "model", model,
+                            "prompt", prompt,
+                            "stream", true
+                    );
+                }
 
                 String jsonRequest = gson.toJson(requestBody);
 
@@ -92,18 +121,31 @@ public class AIService {
                     String[] lines = response.body().split("\n");
                     for (String line : lines) {
                         if (!line.trim().isEmpty()) {
-                            JsonObject json = gson.fromJson(line, JsonObject.class);
-                            if (json.has("response")) {
-                                String partialResponse = json.get("response").getAsString();
-                                buffer.append(partialResponse);
-
-                                // Check if buffer ends with a sentence boundary or is long enough
-                                String currentBuffer = buffer.toString();
-                                if (currentBuffer.endsWith(".") || currentBuffer.endsWith("?") ||
-                                        currentBuffer.endsWith("!") || currentBuffer.length() >= minBufferLength) {
-                                    responseConsumer.accept(currentBuffer);
-                                    buffer.setLength(0); // Clear buffer
+                            if (isMessagesFormat && line.startsWith("data: ")) {
+                                String jsonData = line.substring(6); // Remove "data: " prefix
+                                if (jsonData.equals("[DONE]")) continue;
+                                JsonObject json = gson.fromJson(jsonData, JsonObject.class);
+                                if (json.has("choices")) {
+                                    String partialResponse = json.getAsJsonArray("choices")
+                                            .get(0).getAsJsonObject()
+                                            .get("delta").getAsJsonObject()
+                                            .get("content").getAsString();
+                                    buffer.append(partialResponse);
                                 }
+                            } else if (!isMessagesFormat) {
+                                JsonObject json = gson.fromJson(line, JsonObject.class);
+                                if (json.has("response")) {
+                                    String partialResponse = json.get("response").getAsString();
+                                    buffer.append(partialResponse);
+                                }
+                            }
+
+                            // Check if buffer ends with a sentence boundary or is long enough
+                            String currentBuffer = buffer.toString();
+                            if (currentBuffer.endsWith(".") || currentBuffer.endsWith("?") ||
+                                    currentBuffer.endsWith("!") || currentBuffer.length() >= minBufferLength) {
+                                responseConsumer.accept(currentBuffer);
+                                buffer.setLength(0); // Clear buffer
                             }
                         }
                     }

@@ -1,3 +1,4 @@
+
 package com.ollamachat;
 
 import com.google.gson.Gson;
@@ -19,7 +20,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -139,7 +139,8 @@ public class Ollamachat extends JavaPlugin implements Listener {
                 String apiKey = config.getString("other-ai-configs." + aiName + ".api-key");
                 String model = config.getString("other-ai-configs." + aiName + ".model");
                 boolean enabled = config.getBoolean("other-ai-configs." + aiName + ".enabled", true);
-                otherAIConfigs.put(aiName, new AIConfig(apiUrl, apiKey, model));
+                boolean isMessagesFormat = config.getBoolean("other-ai-configs." + aiName + ".messages-format", false);
+                otherAIConfigs.put(aiName, new AIConfig(apiUrl, apiKey, model, isMessagesFormat));
                 otherAIEnabled.put(aiName, enabled);
             }
         }
@@ -228,10 +229,10 @@ public class Ollamachat extends JavaPlugin implements Listener {
                             isFirstMessage.set(false);
                             fullResponse.append(partialResponse);
                         }
-                    }).join();
+                    }, false).join();
                     finalResponse = fullResponse.toString();
                 } else {
-                    String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, context).join();
+                    String responseBody = aiService.sendRequest(ollamaApiUrl, null, ollamaModel, context, false).join();
                     OllamaResponse ollamaResponse = gson.fromJson(responseBody, OllamaResponse.class);
                     finalResponse = ollamaResponse.response;
                     if (player.isOnline()) {
@@ -269,10 +270,11 @@ public class Ollamachat extends JavaPlugin implements Listener {
                         aiConfig.getApiUrl(),
                         aiConfig.getApiKey(),
                         aiConfig.getModel(),
-                        context
+                        context,
+                        aiConfig.isMessagesFormat()
                 ).join();
 
-                String response = parseAIResponse(aiName, responseBody);
+                String response = parseAIResponse(aiName, responseBody, aiConfig.isMessagesFormat());
 
                 chatHistoryManager.saveChatHistory(
                         player.getUniqueId(),
@@ -289,16 +291,15 @@ public class Ollamachat extends JavaPlugin implements Listener {
         });
     }
 
-    private String parseAIResponse(String aiName, String responseBody) {
-        switch (aiName.toLowerCase()) {
-            case "openai":
-                JsonObject json = gson.fromJson(responseBody, JsonObject.class);
-                return json.getAsJsonArray("choices")
-                        .get(0).getAsJsonObject()
-                        .get("message").getAsJsonObject()
-                        .get("content").getAsString();
-            default:
-                return gson.fromJson(responseBody, OllamaResponse.class).response;
+    private String parseAIResponse(String aiName, String responseBody, boolean isMessagesFormat) {
+        if (isMessagesFormat) {
+            JsonObject json = gson.fromJson(responseBody, JsonObject.class);
+            return json.getAsJsonArray("choices")
+                    .get(0).getAsJsonObject()
+                    .get("message").getAsJsonObject()
+                    .get("content").getAsString();
+        } else {
+            return gson.fromJson(responseBody, OllamaResponse.class).response;
         }
     }
 
@@ -362,11 +363,13 @@ public class Ollamachat extends JavaPlugin implements Listener {
         private final String apiUrl;
         private final String apiKey;
         private final String model;
+        private final boolean isMessagesFormat;
 
-        public AIConfig(String apiUrl, String apiKey, String model) {
+        public AIConfig(String apiUrl, String apiKey, String model, boolean isMessagesFormat) {
             this.apiUrl = apiUrl;
             this.apiKey = apiKey;
             this.model = model;
+            this.isMessagesFormat = isMessagesFormat;
         }
 
         public String getApiUrl() {
@@ -380,9 +383,14 @@ public class Ollamachat extends JavaPlugin implements Listener {
         public String getModel() {
             return model;
         }
+
+        public boolean isMessagesFormat() {
+            return isMessagesFormat;
+        }
     }
 
     private static class OllamaResponse {
         public String response;
     }
 }
+
