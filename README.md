@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.0.2-blue)
+![Version](https://img.shields.io/badge/version-1.0.3-blue)
 
 # Ollama-Chat
 
@@ -56,6 +56,10 @@ ollama-api-url: "http://localhost:11434/api/generate"
 model: "llama3"
 ollama-enabled: true
 
+#Streaming settings
+stream-settings:
+  enabled: true      # Whether or not to enable streaming
+
 # Chat
 trigger-prefix: "@bot "
 response-prefix: "§b[AI] §r"
@@ -67,7 +71,19 @@ max-response-length: 500
 max-history: 5
 
 # Language Settings
-language: "en"  # Default language (en or zh_cn)
+language: "en"
+
+# Progress Display Settings
+progress-display:
+  enabled: true               # Whether to enable progress display
+  type: "bossbar"             # Display type (bossbar or actionbar)
+  color: "BLUE"               # BossBar color (BLUE, GREEN, RED, etc.)
+  style: "SOLID"              # BossBar style (SOLID, SEGMENTED_6, etc.)
+  update-interval: 1          # Progress update frequency (in seconds)
+  title: "&bGenerating..."    # Progress bar title (supports color codes)
+  animation-effects:
+    complete-particles: true  # Displays the particle effect when completed
+    error-sound: "ENTITY_ENDERMAN_TELEPORT"  # Plays a sound when an error occurs
 
 # Other AI Configurations
 other-ai-configs:
@@ -75,7 +91,7 @@ other-ai-configs:
     api-url: "https://api.openai.com/v1/chat/completions"
     api-key: "your-openai-api-key"
     model: "gpt-4"
-    enabled: true
+    enabled: false
 ```
 
 ## Contributing
