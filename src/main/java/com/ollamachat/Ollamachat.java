@@ -1,4 +1,3 @@
-
 package com.ollamachat;
 
 import com.google.gson.Gson;
@@ -20,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,6 +35,8 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private boolean ollamaEnabled;
     private Map<String, Boolean> otherAIEnabled;
     private boolean streamingEnabled;
+    private String defaultPrompt;
+    private Map<String, String> prompts;
 
     private FileConfiguration langConfig;
     private DatabaseManager databaseManager;
@@ -96,6 +98,12 @@ public class Ollamachat extends JavaPlugin implements Listener {
         if (!config.contains("stream-settings")) {
             config.set("stream-settings.enabled", true);
         }
+        if (!config.contains("prompts")) {
+            config.createSection("prompts");
+        }
+        if (!config.contains("default-prompt")) {
+            config.set("default-prompt", "");
+        }
 
         saveConfig();
     }
@@ -130,6 +138,15 @@ public class Ollamachat extends JavaPlugin implements Listener {
         ollamaEnabled = config.getBoolean("ollama-enabled", true);
         maxHistory = config.getInt("max-history", 5);
         streamingEnabled = config.getBoolean("stream-settings.enabled", true);
+        defaultPrompt = config.getString("default-prompt", "");
+
+        prompts = new HashMap<>();
+        if (config.contains("prompts")) {
+            for (String promptName : config.getConfigurationSection("prompts").getKeys(false)) {
+                String promptContent = config.getString("prompts." + promptName);
+                prompts.put(promptName, promptContent);
+            }
+        }
 
         otherAIConfigs = new HashMap<>();
         otherAIEnabled = new HashMap<>();
@@ -211,7 +228,8 @@ public class Ollamachat extends JavaPlugin implements Listener {
         CompletableFuture.runAsync(() -> {
             try {
                 String history = chatHistoryManager.getChatHistory(player.getUniqueId(), "ollama");
-                String context = history + "User: " + prompt;
+                String selectedPrompt = prompts.getOrDefault(defaultPrompt, "");
+                String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
 
                 String finalResponse;
                 if (streamingEnabled) {
@@ -263,7 +281,8 @@ public class Ollamachat extends JavaPlugin implements Listener {
         CompletableFuture.runAsync(() -> {
             try {
                 String history = chatHistoryManager.getChatHistory(player.getUniqueId(), aiName);
-                String context = history + "User: " + prompt;
+                String selectedPrompt = prompts.getOrDefault(defaultPrompt, "");
+                String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
 
                 AIConfig aiConfig = otherAIConfigs.get(aiName);
                 String responseBody = aiService.sendRequest(
@@ -317,12 +336,25 @@ public class Ollamachat extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("ollamachat")) {
-            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            if (args.length == 0) {
+                sender.sendMessage(getMessage("usage-ollamachat", null));
+                return true;
+            }
+
+            if (args[0].equalsIgnoreCase("reload")) {
+                if (!sender.hasPermission("ollamachat.reload")) {
+                    sender.sendMessage(getMessage("no-permission", null));
+                    return true;
+                }
                 reloadConfigValues();
                 loadLanguageFile(getConfig().getString("language", "en"));
                 sender.sendMessage(getMessage("reload-success", null));
                 return true;
-            } else if (args.length > 1 && args[0].equalsIgnoreCase("toggle")) {
+            } else if (args[0].equalsIgnoreCase("toggle") && args.length > 1) {
+                if (!sender.hasPermission("ollamachat.toggle")) {
+                    sender.sendMessage(getMessage("no-permission", null));
+                    return true;
+                }
                 String aiName = args[1];
                 if (aiName.equalsIgnoreCase("ollama")) {
                     ollamaEnabled = !ollamaEnabled;
@@ -335,6 +367,84 @@ public class Ollamachat extends JavaPlugin implements Listener {
                     sender.sendMessage(getMessage("invalid-ai-name", Map.of("ai-list", String.join(", ", otherAIConfigs.keySet()))));
                 }
                 return true;
+            } else if (args[0].equalsIgnoreCase("prompt") && args.length > 1) {
+                String subCommand = args[1].toLowerCase();
+                if (subCommand.equals("set") && args.length > 3) {
+                    if (!sender.hasPermission("ollamachat.prompt.set")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String promptName = args[2];
+                    String promptContent = String.join(" ", java.util.Arrays.copyOfRange(args, 3, args.length));
+                    getConfig().set("prompts." + promptName, promptContent);
+                    saveConfig();
+                    prompts.put(promptName, promptContent);
+                    sender.sendMessage(getMessage("prompt-set", Map.of("name", promptName)));
+                    return true;
+                } else if (subCommand.equals("delete") && args.length == 3) {
+                    if (!sender.hasPermission("ollamachat.prompt.delete")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String promptName = args[2];
+                    if (prompts.containsKey(promptName)) {
+                        getConfig().set("prompts." + promptName, null);
+                        if (defaultPrompt.equals(promptName)) {
+                            getConfig().set("default-prompt", "");
+                            defaultPrompt = "";
+                        }
+                        saveConfig();
+                        prompts.remove(promptName);
+                        sender.sendMessage(getMessage("prompt-deleted", Map.of("name", promptName)));
+                    } else {
+                        sender.sendMessage(getMessage("prompt-not-found", Map.of("name", promptName)));
+                    }
+                    return true;
+                } else if (subCommand.equals("list")) {
+                    if (!sender.hasPermission("ollamachat.prompt.list")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    if (prompts.isEmpty()) {
+                        sender.sendMessage(getMessage("prompt-list-empty", null));
+                    } else {
+                        sender.sendMessage(getMessage("prompt-list", Map.of("prompts", String.join(", ", prompts.keySet()))));
+                    }
+                    if (!defaultPrompt.isEmpty() && prompts.containsKey(defaultPrompt)) {
+                        sender.sendMessage(getMessage("prompt-default", Map.of("name", defaultPrompt)));
+                    } else if (!defaultPrompt.isEmpty()) {
+                        sender.sendMessage(getMessage("prompt-default-invalid", Map.of("name", defaultPrompt)));
+                    }
+                    return true;
+                } else if (subCommand.equals("select") && args.length == 3) {
+                    if (!sender.hasPermission("ollamachat.prompt.select")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String promptName = args[2];
+                    if (prompts.containsKey(promptName)) {
+                        getConfig().set("default-prompt", promptName);
+                        saveConfig();
+                        defaultPrompt = promptName;
+                        sender.sendMessage(getMessage("prompt-selected", Map.of("name", promptName)));
+                    } else {
+                        sender.sendMessage(getMessage("prompt-not-found", Map.of("name", promptName)));
+                    }
+                    return true;
+                } else if (subCommand.equals("clear")) {
+                    if (!sender.hasPermission("ollamachat.prompt.select")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    getConfig().set("default-prompt", "");
+                    saveConfig();
+                    defaultPrompt = "";
+                    sender.sendMessage(getMessage("prompt-cleared", null));
+                    return true;
+                } else {
+                    sender.sendMessage(getMessage("prompt-usage", null));
+                    return true;
+                }
             }
         } else if (command.getName().equalsIgnoreCase("aichat")) {
             if (args.length < 2) {
