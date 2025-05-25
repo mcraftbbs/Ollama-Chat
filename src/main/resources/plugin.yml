@@ -1,37 +1,52 @@
-name: ollamachat
-version: '1.0.4'
+name: OllamaChat
+version: '1.1.0'
 main: com.ollamachat.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]
-description: A plugin used to connect Ollama with Minecraft.
+description: A plugin used to connect Ollama and OtherAI with Minecraft.
 website: https://chat.sarskin.cn/invite/iHgI6LTX
 
 commands:
   ollamachat:
     description: Manage OllamaChat plugin (reload configuration or toggle AI)
     usage: "{usage-ollamachat}"
-    permission: ollamachat.admin
+    permission: ollamachat.reload
   aichat:
     description: Interact with other AI services
     usage: "{usage-aichat}"
     permission: ollamachat.use
 
 permissions:
-  ollamachat.admin:
-    description: Allows managing the plugin (reload and toggle AI)
+  ollamachat.reload:
+    description: Allows managing the plugin (reload)
+    default: op
+  ollamachat.toggle:
+    description: Allows managing the plugin (toggle AI)
     default: op
   ollamachat.use:
     description: Allows using the /aichat command
     default: true
   ollamachat.prompt.set:
-    description: Prompt
+    description: Allows setting a new prompt
     default: op
-    ollamachat.prompt.delete:
-      description: Prompt
-      default: op
-    ollamachat.prompt.list:
-      description: Prompt
-      default: true
-    ollamachat.prompt.select:
-      description: Prompt
-      default: op
+  ollamachat.prompt.delete:
+    description: Allows deleting a prompt
+    default: op
+  ollamachat.prompt.list:
+    description: Allows listing all prompts
+    default: op
+  ollamachat.prompt.select:
+    description: Allows selecting or clearing a prompt
+    default: op
+  ollamachat.conversation.new:
+    description: Allows creating a new conversation
+    default: true
+  ollamachat.conversation.select:
+    description: Allows selecting a conversation
+    default: true
+  ollamachat.conversation.list:
+    description: Allows listing conversations
+    default: true
+  ollamachat.conversation.delete:
+    description: Allows deleting a conversation
+    default: true

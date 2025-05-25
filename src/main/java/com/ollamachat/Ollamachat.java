@@ -17,6 +17,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -37,8 +39,9 @@ public class Ollamachat extends JavaPlugin implements Listener {
     private boolean streamingEnabled;
     private String defaultPrompt;
     private Map<String, String> prompts;
+    private Map<UUID, Map<String, String>> selectedConversations;
 
-    private FileConfiguration langConfig;
+    private JsonObject langConfig;
     private DatabaseManager databaseManager;
     private ChatHistoryManager chatHistoryManager;
     private int maxHistory;
@@ -48,22 +51,33 @@ public class Ollamachat extends JavaPlugin implements Listener {
     public void onEnable() {
         saveDefaultConfig();
         reloadConfigValues();
-        String language = getConfig().getString("language", "en");
+        String language = getConfig().getString("language", "en_us");
+
+        gson = new Gson();
         loadLanguageFile(language);
 
         updateCommandUsages();
 
-        databaseManager = new DatabaseManager();
+        try {
+            databaseManager = new DatabaseManager();
+        } catch (Exception e) {
+            getLogger().severe("Failed to initialize DatabaseManager: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         maxHistory = getConfig().getInt("max-history", 5);
         chatHistoryManager = new ChatHistoryManager(databaseManager, maxHistory);
 
         aiService = new AIService();
-        gson = new Gson();
         progressManager = new ProgressManager(this);
+        selectedConversations = new HashMap<>();
 
         getServer().getPluginManager().registerEvents(this, this);
         getCommand("ollamachat").setExecutor(this);
         getCommand("aichat").setExecutor(this);
+
+        getCommand("ollamachat").setTabCompleter(new OllamaChatTabCompleter(this));
+        getCommand("aichat").setTabCompleter(new OllamaChatTabCompleter(this));
     }
 
     private void updateCommandUsages() {
@@ -76,7 +90,11 @@ public class Ollamachat extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        databaseManager.close();
+        if (databaseManager != null) {
+            databaseManager.close();
+        } else {
+            getLogger().warning("DatabaseManager was null, skipping close.");
+        }
         Bukkit.getOnlinePlayers().forEach(progressManager::cleanup);
     }
 
@@ -169,21 +187,25 @@ public class Ollamachat extends JavaPlugin implements Listener {
             langFolder.mkdirs();
         }
 
-        File langFile = new File(langFolder, language + ".lang");
+        File langFile = new File(langFolder, language + ".json");
         if (!langFile.exists()) {
-            saveResource("lang/" + language + ".lang", false);
+            saveResource("lang/" + language + ".json", false);
         }
 
-        try {
-            langConfig = YamlConfiguration.loadConfiguration(langFile);
-        } catch (Exception e) {
-            getLogger().severe("Failed to load language file: " + langFile.getName());
-            e.printStackTrace();
+        try (FileReader reader = new FileReader(langFile)) {
+            langConfig = gson.fromJson(reader, JsonObject.class);
+            if (langConfig == null) {
+                langConfig = new JsonObject();
+                getLogger().warning("Language file is empty or invalid: " + langFile.getName());
+            }
+        } catch (IOException e) {
+            getLogger().severe("Failed to load language file: " + langFile.getName() + " - " + e.getMessage());
+            langConfig = new JsonObject();
         }
     }
 
     String getMessage(String key, Map<String, String> placeholders) {
-        String message = langConfig.getString(key, "§cMissing language key: " + key);
+        String message = langConfig != null && langConfig.has(key) ? langConfig.get(key).getAsString() : "§c[OllamaChat] Missing language key: " + key;
         if (placeholders != null) {
             for (Map.Entry<String, String> entry : placeholders.entrySet()) {
                 message = message.replace("{" + entry.getKey() + "}", entry.getValue());
@@ -227,7 +249,13 @@ public class Ollamachat extends JavaPlugin implements Listener {
 
         CompletableFuture.runAsync(() -> {
             try {
-                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), "ollama");
+                String conversationName = selectedConversations
+                        .computeIfAbsent(player.getUniqueId(), k -> new HashMap<>())
+                        .getOrDefault("ollama", null);
+                String conversationId = conversationName != null
+                        ? chatHistoryManager.getConversationId(player.getUniqueId(), "ollama", conversationName)
+                        : null;
+                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), "ollama", conversationId);
                 String selectedPrompt = prompts.getOrDefault(defaultPrompt, "");
                 String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
 
@@ -259,7 +287,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
                 }
 
                 if (!finalResponse.isEmpty()) {
-                    chatHistoryManager.saveChatHistory(player.getUniqueId(), "ollama", prompt, finalResponse);
+                    chatHistoryManager.saveChatHistory(player.getUniqueId(), "ollama", conversationId, prompt, finalResponse);
                 }
                 progressManager.complete(player);
             } catch (Exception e) {
@@ -280,7 +308,13 @@ public class Ollamachat extends JavaPlugin implements Listener {
 
         CompletableFuture.runAsync(() -> {
             try {
-                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), aiName);
+                String conversationName = selectedConversations
+                        .computeIfAbsent(player.getUniqueId(), k -> new HashMap<>())
+                        .getOrDefault(aiName, null);
+                String conversationId = conversationName != null
+                        ? chatHistoryManager.getConversationId(player.getUniqueId(), aiName, conversationName)
+                        : null;
+                String history = chatHistoryManager.getChatHistory(player.getUniqueId(), aiName, conversationId);
                 String selectedPrompt = prompts.getOrDefault(defaultPrompt, "");
                 String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
 
@@ -298,6 +332,7 @@ public class Ollamachat extends JavaPlugin implements Listener {
                 chatHistoryManager.saveChatHistory(
                         player.getUniqueId(),
                         aiName,
+                        conversationId,
                         prompt,
                         response
                 );
@@ -445,6 +480,81 @@ public class Ollamachat extends JavaPlugin implements Listener {
                     sender.sendMessage(getMessage("prompt-usage", null));
                     return true;
                 }
+            } else if (args[0].equalsIgnoreCase("conversation") && args.length > 1) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(getMessage("player-only", null));
+                    return true;
+                }
+                Player player = (Player) sender;
+                String subCommand = args[1].toLowerCase();
+                String aiName = args.length > 2 ? args[2] : "ollama";
+                if (!aiName.equals("ollama") && !otherAIConfigs.containsKey(aiName)) {
+                    sender.sendMessage(getMessage("invalid-ai-name", Map.of("ai-list", String.join(", ", otherAIConfigs.keySet()))));
+                    return true;
+                }
+                if (subCommand.equals("new") && args.length == 4) {
+                    if (!sender.hasPermission("ollamachat.conversation.new")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String convName = args[3];
+                    String convId = chatHistoryManager.createConversation(player.getUniqueId(), aiName, convName);
+                    selectedConversations.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(aiName, convName);
+                    sender.sendMessage(getMessage("conversation-created", Map.of("name", convName, "ai-name", aiName)));
+                    return true;
+                } else if (subCommand.equals("select") && args.length == 4) {
+                    if (!sender.hasPermission("ollamachat.conversation.select")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String convName = args[3];
+                    if (chatHistoryManager.conversationExistsByName(player.getUniqueId(), aiName, convName)) {
+                        selectedConversations.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(aiName, convName);
+                        sender.sendMessage(getMessage("conversation-selected", Map.of("name", convName, "ai-name", aiName)));
+                    } else {
+                        sender.sendMessage(getMessage("conversation-not-found", Map.of("name", convName)));
+                    }
+                    return true;
+                } else if (subCommand.equals("delete") && args.length == 4) {
+                    if (!sender.hasPermission("ollamachat.conversation.delete")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    String convName = args[3];
+                    String convId = chatHistoryManager.getConversationId(player.getUniqueId(), aiName, convName);
+                    if (convId != null && chatHistoryManager.deleteConversation(player.getUniqueId(), aiName, convId)) {
+                        Map<String, String> convMap = selectedConversations.get(player.getUniqueId());
+                        if (convMap != null && convName.equals(convMap.get(aiName))) {
+                            convMap.remove(aiName);
+                        }
+                        sender.sendMessage(getMessage("conversation-deleted", Map.of("name", convName, "ai-name", aiName)));
+                    } else {
+                        sender.sendMessage(getMessage("conversation-not-found", Map.of("name", convName)));
+                    }
+                    return true;
+                } else if (subCommand.equals("list") && args.length == 3) {
+                    if (!sender.hasPermission("ollamachat.conversation.list")) {
+                        sender.sendMessage(getMessage("no-permission", null));
+                        return true;
+                    }
+                    Map<String, String> conversations = chatHistoryManager.listConversations(player.getUniqueId(), aiName);
+                    if (conversations.isEmpty()) {
+                        sender.sendMessage(getMessage("conversation-list-empty", Map.of("ai-name", aiName)));
+                    } else {
+                        String convList = String.join(", ", conversations.values());
+                        sender.sendMessage(getMessage("conversation-list", Map.of("conversations", convList, "ai-name", aiName)));
+                    }
+                    String selectedConv = selectedConversations.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).get(aiName);
+                    if (selectedConv != null && conversations.containsValue(selectedConv)) {
+                        sender.sendMessage(getMessage("conversation-default", Map.of("name", selectedConv, "ai-name", aiName)));
+                    } else if (selectedConv != null) {
+                        sender.sendMessage(getMessage("conversation-default-invalid", Map.of("name", selectedConv, "ai-name", aiName)));
+                    }
+                    return true;
+                } else {
+                    sender.sendMessage(getMessage("conversation-usage", null));
+                    return true;
+                }
             }
         } else if (command.getName().equalsIgnoreCase("aichat")) {
             if (args.length < 2) {
@@ -467,6 +577,18 @@ public class Ollamachat extends JavaPlugin implements Listener {
             return true;
         }
         return false;
+    }
+
+    public Map<String, String> getPrompts() {
+        return prompts;
+    }
+
+    public Map<String, AIConfig> getOtherAIConfigs() {
+        return otherAIConfigs;
+    }
+
+    public ChatHistoryManager getChatHistoryManager() {
+        return chatHistoryManager;
     }
 
     private static class AIConfig {
@@ -503,4 +625,5 @@ public class Ollamachat extends JavaPlugin implements Listener {
         public String response;
     }
 }
+
 
