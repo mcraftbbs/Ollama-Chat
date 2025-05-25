@@ -1,5 +1,5 @@
 name: ollamachat
-version: '1.0.3-hotfix'
+version: '1.0.4'
 main: com.ollamachat.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]
@@ -23,3 +23,15 @@ permissions:
   ollamachat.use:
     description: Allows using the /aichat command
     default: true
+  ollamachat.prompt.set:
+    description: Prompt
+    default: op
+    ollamachat.prompt.delete:
+      description: Prompt
+      default: op
+    ollamachat.prompt.list:
+      description: Prompt
+      default: true
+    ollamachat.prompt.select:
+      description: Prompt
+      default: op

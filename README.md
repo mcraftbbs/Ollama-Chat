@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.0.3hotfix-blue)
+![Version](https://img.shields.io/badge/version-1.0.4-blue)
 
 # Ollama-Chat
 

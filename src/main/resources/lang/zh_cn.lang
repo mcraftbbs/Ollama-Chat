@@ -4,7 +4,7 @@ toggle-enabled: "§a{ai-name} 已启用。"
 toggle-disabled: "§a{ai-name} 已禁用。"
 invalid-ai-name: "§c无效的 AI 名称。可用的 AI: {ai-list}。"
 usage-aichat: "§c用法: /aichat <ai名称> <提示>"
-usage-ollamachat: "§c用法: /ollamachat <reload|toggle <ai名称>>"
+usage-ollamachat: "§c用法: /ollamachat <reload|toggle> <ai名称>|prompt <set|delete|list|select|clear> <名称> <内容>"
 player-only: "§c该命令只能由玩家使用。"
 ollama-enabled: "§aOllama 已启用。"
 ollama-disabled: "§aOllama 已禁用。"
@@ -21,3 +21,15 @@ config-load-failed: "§c加载配置文件失败: {error}，正在重新生成�
 generating-status: "生成中... [{progress}%]"
 complete-status: "完成！"
 error-status: "生成失败！"
+
+# 提示词指令消息
+prompt-usage: §e/ollamachat prompt <set> <名称> <内容>|delete <名称>|list|select <名称>|<clear>
+prompt-set: §a提示词 '{name}' 设置成功！
+prompt-deleted: §a提示词 '{name}' 删除成功！
+prompt-not-found: §c未找到提示词 '{name}'！
+prompt-list: §a可用提示词：{prompts}
+prompt-list-empty: §a暂无可用提示词。
+prompt-selected: §a默认提示词设置为 '{name}'。
+prompt-cleared: §a默认提示词已清除。
+prompt-default: §a当前默认提示词: '{name}'
+prompt-default-invalid: §c未找到当前默认提示词 '{name}' .

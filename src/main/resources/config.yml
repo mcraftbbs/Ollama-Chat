@@ -5,7 +5,7 @@ ollama-enabled: true
 
 #Streaming settings
 stream-settings:
-  enabled: true      # Whether or not to enable streaming
+  enabled: true      # Whether to enable streaming
 
 # Chat
 trigger-prefix: "@bot "
@@ -31,6 +31,16 @@ progress-display:
   animation-effects:
     complete-particles: true  # Displays the particle effect when completed
     error-sound: "ENTITY_ENDERMAN_TELEPORT"  # Plays a sound when an error occurs
+
+
+# Default prompt to prepend to user inputs (empty for none)
+default-prompt: ""
+
+# Custom prompts
+prompts:
+# Example:
+# friendly: "You are a friendly assistant who responds in a cheerful tone."
+# formal: "You are a professional assistant who responds formally."
 
 # Other AI Configurations
 other-ai-configs:
