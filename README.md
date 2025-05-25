@@ -71,7 +71,7 @@ max-response-length: 500
 max-history: 5
 
 # Language Settings
-language: "en"
+language: "en_us"
 
 # Progress Display Settings
 progress-display:
