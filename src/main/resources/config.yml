@@ -11,7 +11,6 @@ stream-settings:
 trigger-prefixes:
   - "@bot"
   - "@ai"
-  - "/chat"
 
 # Length
 max-response-length: 500
