@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
 
 # Ollama-Chat
 
@@ -14,6 +14,7 @@
 - **Ollama Integration**: Leverage the advanced capabilities of Ollama to enhance your Minecraft experience.
 - **Multi-Language Support**: Supports multiple languages (e.g., English, Simplified Chinese) through language files in the `lang` folder.
 - **Toggle AI Services**: Enable or disable AI services dynamically using the `/ollamachat toggle <ai-name>` command.
+- **Smart Response Suggestions**: Get AI-generated follow-up questions
 - **Simple Commands**: Use the `/ollamachat reload` command to reload the plugin configuration instantly, ensuring seamless updates without server restarts.
 
 ## Usage
@@ -56,13 +57,14 @@ ollama-api-url: "http://localhost:11434/api/generate"
 model: "llama3"
 ollama-enabled: true
 
-#Streaming settings
+# Streaming settings
 stream-settings:
-  enabled: true      # Whether or not to enable streaming
+  enabled: true      # Whether to enable streaming
 
 # Chat
-trigger-prefix: "@bot "
-response-prefix: "§b[AI] §r"
+trigger-prefixes:
+  - "@bot"
+  - "@ai"
 
 # Length
 max-response-length: 500
@@ -76,14 +78,24 @@ language: "en_us"
 # Progress Display Settings
 progress-display:
   enabled: true               # Whether to enable progress display
-  type: "bossbar"             # Display type (bossbar or actionbar)
-  color: "BLUE"               # BossBar color (BLUE, GREEN, RED, etc.)
-  style: "SOLID"              # BossBar style (SOLID, SEGMENTED_6, etc.)
-  update-interval: 1          # Progress update frequency (in seconds)
-  title: "&bGenerating..."    # Progress bar title (supports color codes)
-  animation-effects:
-    complete-particles: true  # Displays the particle effect when completed
-    error-sound: "ENTITY_ENDERMAN_TELEPORT"  # Plays a sound when an error occurs
+  type: "bossbar"            # Display type (bossbar or actionbar)
+  color: "BLUE"              # BossBar color (BLUE, GREEN, RED, etc.)
+  style: "SOLID"             # BossBar style (SOLID, SEGMENTED_6, etc.)
+  update-interval: 1         # Progress update frequency (in seconds)
+
+# Suggested Response
+suggested-responses-enabled: false
+suggested-response-models:
+  - "llama3"
+
+# Default prompt to prepend to user inputs (empty for none)
+default-prompt: ""
+
+# Custom prompts
+prompts:
+# Example:
+# friendly: "You are a friendly assistant who responds in a cheerful tone."
+# formal: "You are a professional assistant who responds formally."
 
 # Other AI Configurations
 other-ai-configs:

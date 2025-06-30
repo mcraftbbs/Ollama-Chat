@@ -1,4 +1,3 @@
-
 {
   "usage-ollamachat": "§e[OllamaChat] Usage:\n- /ollamachat reload\n- /ollamachat toggle <ai-name>\n- /ollamachat prompt <set|delete|list|select|clear> [args]\n- /ollamachat conversation <new|select|delete|list> [args]",
   "usage-aichat": "§e[OllamaChat] Usage:\n- /aichat <ai-name> <prompt>",
@@ -35,5 +34,12 @@
   "conversation-list": "§a[OllamaChat] Available conversations for {ai-name}:\n- {conversations}",
   "conversation-list-empty": "§a[OllamaChat] No conversations available for {ai-name}.",
   "conversation-default": "§a[OllamaChat] Current conversation for {ai-name}: '{name}'",
-  "conversation-default-invalid": "§c[OllamaChat] Current conversation '{name}' for {ai-name} is invalid (not found)."
+  "conversation-default-invalid": "§c[OllamaChat] Current conversation '{name}' for {ai-name} is invalid (not found).",
+  "suggested-responses-header": "§a[OllamaChat] Suggested Responses:",
+  "suggested-response-prefix": "§7[Click to Reply] §f",
+  "general-error": "§c[OllamaChat] An unexpected error occurred: {error}",
+  "streaming-interrupted": "§c[OllamaChat] Streaming response was interrupted.",
+  "database-error": "§c[OllamaChat] Database error occurred: {error}",
+  "response-truncated": "§e[OllamaChat] Response was truncated due to length limit.",
+  "json-render-error": "§c[OllamaChat] Failed to render suggested response: {error}"
 }

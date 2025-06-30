@@ -3,13 +3,14 @@ ollama-api-url: "http://localhost:11434/api/generate"
 model: "llama3"
 ollama-enabled: true
 
-#Streaming settings
+# Streaming settings
 stream-settings:
   enabled: true      # Whether to enable streaming
 
 # Chat
-trigger-prefix: "@bot "
-response-prefix: "§b[AI] §r"
+trigger-prefixes:
+  - "@bot"
+  - "@ai"
 
 # Length
 max-response-length: 500
@@ -23,15 +24,15 @@ language: "en_us"
 # Progress Display Settings
 progress-display:
   enabled: true               # Whether to enable progress display
-  type: "bossbar"             # Display type (bossbar or actionbar)
-  color: "BLUE"               # BossBar color (BLUE, GREEN, RED, etc.)
-  style: "SOLID"              # BossBar style (SOLID, SEGMENTED_6, etc.)
-  update-interval: 1          # Progress update frequency (in seconds)
-  title: "&bGenerating..."    # Progress bar title (supports color codes)
-  animation-effects:
-    complete-particles: true  # Displays the particle effect when completed
-    error-sound: "ENTITY_ENDERMAN_TELEPORT"  # Plays a sound when an error occurs
+  type: "bossbar"            # Display type (bossbar or actionbar)
+  color: "BLUE"              # BossBar color (BLUE, GREEN, RED, etc.)
+  style: "SOLID"             # BossBar style (SOLID, SEGMENTED_6, etc.)
+  update-interval: 1         # Progress update frequency (in seconds)
 
+# Suggested Response
+suggested-responses-enabled: false
+suggested-response-models:
+  - "llama3"
 
 # Default prompt to prepend to user inputs (empty for none)
 default-prompt: ""
@@ -50,3 +51,4 @@ other-ai-configs:
     model: "gpt-4"
     enabled: false
     messages-format: true
+
