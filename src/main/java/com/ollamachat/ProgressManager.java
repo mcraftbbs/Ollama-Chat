@@ -1,5 +1,7 @@
 package com.ollamachat;
 
+import com.ollamachat.core.Ollamachat;
+import com.ollamachat.core.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -13,11 +15,13 @@ import java.util.UUID;
 
 public class ProgressManager {
     private final Ollamachat plugin;
+    private final ConfigManager configManager; // Add ConfigManager reference
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
     private final Map<UUID, BukkitTask> tasks = new HashMap<>();
 
     public ProgressManager(Ollamachat plugin) {
         this.plugin = plugin;
+        this.configManager = plugin.getConfigManager(); // Initialize ConfigManager
     }
 
     public void startProgress(Player player, String title, BarColor color, BarStyle style) {
@@ -33,12 +37,12 @@ public class ProgressManager {
 
     private void handleBossBarProgress(Player player, UUID uuid, String title, BarColor color, BarStyle style) {
         BossBar bossBar = Bukkit.createBossBar(
-                plugin.getMessage("generating-status", Map.of("progress", "0")),
+                configManager.getMessage("generating-status", Map.of("progress", "0")), // Use configManager
                 color,
                 style
         );
         bossBar.addPlayer(player);
-        bossBar.setProgress(0.0); // Set initial progress to 0%
+        bossBar.setProgress(0.0);
         bossBar.setVisible(true);
         bossBars.put(uuid, bossBar);
 
@@ -57,7 +61,7 @@ public class ProgressManager {
                 cleanup(player);
                 return;
             }
-            player.sendActionBar(plugin.getMessage("generating-status", Map.of("progress", "0")));
+            player.sendActionBar(configManager.getMessage("generating-status", Map.of("progress", "0"))); // Use configManager
         }, 0, interval));
     }
 
@@ -65,12 +69,11 @@ public class ProgressManager {
         UUID uuid = player.getUniqueId();
         if (bossBars.containsKey(uuid)) {
             BossBar bossBar = bossBars.get(uuid);
-            bossBar.setProgress(1.0); // Set progress to 100% on completion
-            bossBar.setTitle(plugin.getMessage("complete-status", null));
+            bossBar.setProgress(1.0);
+            bossBar.setTitle(configManager.getMessage("complete-status", null)); // Use configManager
             bossBar.setColor(BarColor.GREEN);
             Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
         } else {
-            // For action bar, just cleanup as progress is handled in handleActionBarProgress
             Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
         }
     }
@@ -79,7 +82,7 @@ public class ProgressManager {
         UUID uuid = player.getUniqueId();
         if (bossBars.containsKey(uuid)) {
             BossBar bossBar = bossBars.get(uuid);
-            bossBar.setTitle(plugin.getMessage("error-status", null));
+            bossBar.setTitle(configManager.getMessage("error-status", null)); // Use configManager
             bossBar.setColor(BarColor.RED);
             Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
         }
@@ -97,4 +100,5 @@ public class ProgressManager {
         }
     }
 }
+
 

@@ -1,4 +1,3 @@
-
 package com.ollamachat;
 
 import org.bukkit.entity.Player;
