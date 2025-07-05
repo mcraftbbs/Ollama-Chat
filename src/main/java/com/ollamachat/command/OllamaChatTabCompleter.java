@@ -8,6 +8,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +47,12 @@ public class OllamaChatTabCompleter implements TabCompleter {
                                 sender.hasPermission("ollamachat.conversation.delete") ||
                                 sender.hasPermission("ollamachat.conversation.list"))) {
                     subCommands.add("conversation");
+                }
+                if (sender instanceof Player && sender.hasPermission("ollamachat.suggests.toggle")) {
+                    subCommands.add("suggests");
+                }
+                if (sender.hasPermission("ollamachat.suggests-presets.toggle")) {
+                    subCommands.add("suggests-presets");
                 }
                 return filterCompletions(subCommands, args[0]);
             } else if (args.length == 2 && args[0].equalsIgnoreCase("toggle") && sender.hasPermission("ollamachat.toggle")) {
@@ -107,6 +114,9 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 String aiName = args[2];
                 Map<String, String> conversations = plugin.getChatHistoryManager().listConversations(((Player) sender).getUniqueId(), aiName);
                 return filterCompletions(new ArrayList<>(conversations.values()), args[3]);
+            } else if (args.length == 2 && (args[0].equalsIgnoreCase("suggests") || args[0].equalsIgnoreCase("suggests-presets")) && sender instanceof Player &&
+                    (sender.hasPermission("ollamachat.suggests.toggle") || sender.hasPermission("ollamachat.suggests-presets.toggle"))) {
+                return filterCompletions(Arrays.asList("on", "off"), args[1]);
             }
         } else if (command.getName().equalsIgnoreCase("aichat") && sender.hasPermission("ollamachat.use")) {
             if (args.length == 1) {
@@ -126,4 +136,8 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 .collect(Collectors.toList());
     }
 }
+
+
+
+
 

@@ -33,6 +33,16 @@ progress-display:
 suggested-responses-enabled: false
 suggested-response-models:
   - "llama3"
+suggested-response-count: 3
+suggested-response-prompt: "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3"
+suggested-response-presets:
+  - "I see what you mean."
+  - "That's interesting!"
+  - "Tell me more about that."
+suggested-response-model-toggles:
+  - llama3
+suggested-response-cooldown: 10
+suggested-response-presets-enabled: false
 
 # Default prompt to prepend to user inputs (empty for none)
 default-prompt: ""

@@ -41,5 +41,11 @@
   "streaming-interrupted": "§c[OllamaChat] Streaming response was interrupted.",
   "database-error": "§c[OllamaChat] Database error occurred: {error}",
   "response-truncated": "§e[OllamaChat] Response was truncated due to length limit.",
-  "json-render-error": "§c[OllamaChat] Failed to render suggested response: {error}"
+  "json-render-error": "§c[OllamaChat] Failed to render suggested response: {error}",
+  "suggests-enabled": "§a[OllamaChat] Suggested responses enabled for {player}!",
+  "suggests-disabled": "§c[OllamaChat] Suggested responses disabled for {player}!",
+  "suggests-rate-limit": "§c[OllamaChat] Please wait {seconds} seconds before generating more suggestions.",
+  "suggested-response-hover": "§eClick to send this suggestion as a prompt!",
+  "suggests-presets-enabled": "§a[OllamaChat] Suggested response presets have been enabled.",
+  "suggests-presets-disabled": "§c[OllamaChat] Suggested response presets have been disabled."
 }

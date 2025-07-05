@@ -41,6 +41,12 @@
   "streaming-interrupted": "§c[OllamaChat] 流式响应已中断。",
   "database-error": "§c[OllamaChat] 数据库错误：{error}",
   "response-truncated": "§e[OllamaChat] 响应因长度限制已被截断。",
-  "json-render-error": "§c[OllamaChat] 未能渲染成功候选回复: {error}"
+  "json-render-error": "§c[OllamaChat] 未能渲染成功推荐回复: {error}",
+  "suggests-enabled": "§a[OllamaChat] 已为玩家{player}启用推荐回复！",
+  "suggests-disabled": "§c[OllamaChat] 已为玩家{player}禁用推荐回复！",
+  "suggests-rate-limit": "§c[OllamaChat] 请等待{seconds}秒后再生成推荐回复",
+  "suggested-response-hover": "§e点击发送此推荐内容！",
+  "suggests-presets-enabled": "§a[OllamaChat] 已启用预设推荐回复",
+  "suggests-presets-disabled": "§c[OllamaChat] 已启用预设推荐回复"
 }
 

@@ -1,5 +1,5 @@
 name: OllamaChat
-version: '1.1.1'
+version: '1.1.2'
 main: com.ollamachat.core.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]
@@ -50,3 +50,9 @@ permissions:
   ollamachat.conversation.delete:
     description: Allows deleting a conversation
     default: true
+  ollamachat.suggests.toggle:
+    description: Allows toggling suggested responses on or off
+    default: true
+  ollamachat.suggests-presets.toggle:
+    description: Allows toggling of suggested response presets
+    default: op

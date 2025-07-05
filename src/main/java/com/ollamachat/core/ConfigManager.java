@@ -1,4 +1,3 @@
-
 package com.ollamachat.core;
 
 import com.google.gson.Gson;
@@ -29,11 +28,18 @@ public class ConfigManager {
     private int maxHistory;
     private List<String> suggestedResponseModels;
     private boolean suggestedResponsesEnabled;
+    private int suggestedResponseCount;
+    private String suggestedResponsePrompt;
+    private List<String> suggestedResponsePresets;
+    private Map<String, Boolean> suggestedResponseModelToggles;
+    private int suggestedResponseCooldown;
+    private boolean suggestedResponsePresetsEnabled;
 
     public ConfigManager(Ollamachat plugin) {
         this.plugin = plugin;
         this.gson = new Gson();
         this.selectedConversations = new HashMap<>();
+        this.suggestedResponseModelToggles = new HashMap<>();
     }
 
     public void initialize() {
@@ -46,19 +52,36 @@ public class ConfigManager {
         FileConfiguration config = plugin.getConfig();
 
         if (!config.contains("ollama-enabled")) config.set("ollama-enabled", true);
-        if (!config.contains("language")) config.set("language", "en");
+        if (!config.contains("language")) config.set("language", "en_us");
         if (!config.contains("other-ai-configs")) config.createSection("other-ai-configs");
         if (!config.contains("max-history")) config.set("max-history", 5);
         if (!config.contains("stream-settings")) config.set("stream-settings.enabled", true);
         if (!config.contains("prompts")) config.createSection("prompts");
         if (!config.contains("default-prompt")) config.set("default-prompt", "");
         if (!config.contains("trigger-prefixes")) {
-            config.set("trigger-prefixes", Arrays.asList("@bot", "@ai", "/chat"));
+            config.set("trigger-prefixes", Arrays.asList("@bot", "@ai"));
         }
         if (!config.contains("suggested-response-models")) {
-            config.set("suggested-response-models", Arrays.asList("llama3", "mistral"));
+            config.set("suggested-response-models", Arrays.asList("llama3"));
         }
         if (!config.contains("suggested-responses-enabled")) config.set("suggested-responses-enabled", true);
+        if (!config.contains("suggested-response-count")) config.set("suggested-response-count", 3);
+        if (!config.contains("suggested-response-prompt")) {
+            config.set("suggested-response-prompt", "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3");
+        }
+        if (!config.contains("suggested-response-presets")) {
+            config.set("suggested-response-presets", Arrays.asList("I see what you mean.", "That's interesting!", "Tell me more about that."));
+        }
+        if (!config.contains("suggested-response-model-toggles")) {
+            config.createSection("suggested-response-model-toggles");
+            for (String model : config.getStringList("suggested-response-models")) {
+                if (!config.contains("suggested-response-model-toggles." + model)) {
+                    config.set("suggested-response-model-toggles." + model, true);
+                }
+            }
+        }
+        if (!config.contains("suggested-response-cooldown")) config.set("suggested-response-cooldown", 10);
+        if (!config.contains("suggested-response-presets-enabled")) config.set("suggested-response-presets-enabled", true);
 
         plugin.saveConfig();
     }
@@ -96,9 +119,14 @@ public class ConfigManager {
         defaultPrompt = config.getString("default-prompt", "");
         suggestedResponseModels = config.getStringList("suggested-response-models");
         suggestedResponsesEnabled = config.getBoolean("suggested-responses-enabled", true);
+        suggestedResponseCount = config.getInt("suggested-response-count", 3);
+        suggestedResponsePrompt = config.getString("suggested-response-prompt", "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3");
+        suggestedResponsePresets = config.getStringList("suggested-response-presets");
+        suggestedResponseCooldown = config.getInt("suggested-response-cooldown", 10);
+        suggestedResponsePresetsEnabled = config.getBoolean("suggested-response-presets-enabled", true);
 
         prompts = new HashMap<>();
-        if (config.contains("prompts")) {
+        if (config.contains("prompts") && config.getConfigurationSection("prompts") != null) {
             for (String promptName : config.getConfigurationSection("prompts").getKeys(false)) {
                 String promptContent = config.getString("prompts." + promptName);
                 prompts.put(promptName, promptContent);
@@ -107,7 +135,7 @@ public class ConfigManager {
 
         otherAIConfigs = new HashMap<>();
         otherAIEnabled = new HashMap<>();
-        if (config.contains("other-ai-configs")) {
+        if (config.contains("other-ai-configs") && config.getConfigurationSection("other-ai-configs") != null) {
             for (String aiName : config.getConfigurationSection("other-ai-configs").getKeys(false)) {
                 String apiUrl = config.getString("other-ai-configs." + aiName + ".api-url");
                 String apiKey = config.getString("other-ai-configs." + aiName + ".api-key");
@@ -116,6 +144,13 @@ public class ConfigManager {
                 boolean isMessagesFormat = config.getBoolean("other-ai-configs." + aiName + ".messages-format", false);
                 otherAIConfigs.put(aiName, new AIConfig(apiUrl, apiKey, model, isMessagesFormat));
                 otherAIEnabled.put(aiName, enabled);
+            }
+        }
+
+        suggestedResponseModelToggles = new HashMap<>();
+        if (config.contains("suggested-response-model-toggles") && config.getConfigurationSection("suggested-response-model-toggles") != null) {
+            for (String model : config.getConfigurationSection("suggested-response-model-toggles").getKeys(false)) {
+                suggestedResponseModelToggles.put(model, config.getBoolean("suggested-response-model-toggles." + model, true));
             }
         }
     }
@@ -151,6 +186,16 @@ public class ConfigManager {
             }
         }
         return message;
+    }
+
+    public boolean isSuggestedResponsePresetsEnabled() {
+        return suggestedResponsePresetsEnabled;
+    }
+
+    public void setSuggestedResponsePresetsEnabled(boolean enabled) {
+        this.suggestedResponsePresetsEnabled = enabled;
+        plugin.getConfig().set("suggested-response-presets-enabled", enabled);
+        plugin.saveConfig();
     }
 
     // Getters
@@ -218,6 +263,26 @@ public class ConfigManager {
         return suggestedResponsesEnabled;
     }
 
+    public int getSuggestedResponseCount() {
+        return suggestedResponseCount;
+    }
+
+    public String getSuggestedResponsePrompt() {
+        return suggestedResponsePrompt;
+    }
+
+    public List<String> getSuggestedResponsePresets() {
+        return suggestedResponsePresets;
+    }
+
+    public Map<String, Boolean> getSuggestedResponseModelToggles() {
+        return suggestedResponseModelToggles;
+    }
+
+    public int getSuggestedResponseCooldown() {
+        return suggestedResponseCooldown;
+    }
+
     public static class AIConfig {
         private final String apiUrl;
         private final String apiKey;
@@ -248,3 +313,4 @@ public class ConfigManager {
         }
     }
 }
+

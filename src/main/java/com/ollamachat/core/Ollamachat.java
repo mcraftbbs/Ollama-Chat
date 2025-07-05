@@ -3,18 +3,24 @@ package com.ollamachat.core;
 import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DatabaseManager;
 import com.ollamachat.ProgressManager;
+import com.ollamachat.chat.ChatTriggerHandler;
+import com.ollamachat.chat.SuggestedResponseHandler;
 import com.ollamachat.command.AIChatCommand;
 import com.ollamachat.command.OllamaChatCommand;
 import com.ollamachat.command.OllamaChatTabCompleter;
-import com.ollamachat.chat.ChatTriggerHandler;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Ollamachat extends JavaPlugin {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+public class Ollamachat extends JavaPlugin {
     private ConfigManager configManager;
     private DatabaseManager databaseManager;
     private ChatHistoryManager chatHistoryManager;
     private ProgressManager progressManager;
+    private SuggestedResponseHandler suggestedResponseHandler;
+    private Map<UUID, Boolean> playerSuggestionToggles;
 
     @Override
     public void onEnable() {
@@ -32,11 +38,13 @@ public class Ollamachat extends JavaPlugin {
         int maxHistory = configManager.getMaxHistory();
         chatHistoryManager = new ChatHistoryManager(databaseManager, maxHistory);
         progressManager = new ProgressManager(this);
+        suggestedResponseHandler = new SuggestedResponseHandler(this);
+        playerSuggestionToggles = new HashMap<>();
 
-        // 注册事件
+        // Register events
         getServer().getPluginManager().registerEvents(new ChatTriggerHandler(this), this);
 
-        // 注册命令
+        // Register commands
         getCommand("ollamachat").setExecutor(new OllamaChatCommand(this));
         getCommand("ollamachat").setTabCompleter(new OllamaChatTabCompleter(this));
         getCommand("aichat").setExecutor(new AIChatCommand(this));
@@ -50,10 +58,12 @@ public class Ollamachat extends JavaPlugin {
         } else {
             getLogger().warning("DatabaseManager was null, skipping close.");
         }
-        getServer().getOnlinePlayers().forEach(progressManager::cleanup);
+        if (progressManager != null) {
+            getServer().getOnlinePlayers().forEach(progressManager::cleanup);
+        }
     }
 
-    // Getter 方法
+    // Getter methods
     public ConfigManager getConfigManager() {
         return configManager;
     }
@@ -69,4 +79,15 @@ public class Ollamachat extends JavaPlugin {
     public ProgressManager getProgressManager() {
         return progressManager;
     }
+
+    public SuggestedResponseHandler getSuggestedResponseHandler() {
+        return suggestedResponseHandler;
+    }
+
+    public Map<UUID, Boolean> getPlayerSuggestionToggles() {
+        return playerSuggestionToggles;
+    }
 }
+
+
+
