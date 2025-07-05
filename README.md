@@ -1,5 +1,6 @@
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
 # OllamaChat
-
+[![Download](https://github.com/gabrielvicenteYT/modrinth-icons/blob/main/Branding/Badge/badge-dark.svg)](https://modrinth.com/plugin/ollama-chat)
 ## Overview
 
 **OllamaChat** is a cutting-edge Minecraft plugin that integrates Ollama and OpenAI-class APIs, enabling real-time AI interactions, multi-language support, and advanced prompt and conversation management for immersive in-game experiences.
@@ -72,7 +73,7 @@ Type `@bot` or `@ai` followed by your message in Minecraft chat to interact with
 
 ## Installation
 
-1. **Download**: Get the latest **OllamaChat**.
+1. **Download the Plugin**: Obtain the latest version of **Ollama-Chat** from the [official repository](https://github.com/mcraftbbs/Ollama-Chat).
 2. **Install**: Place the `.jar` file in your server's `plugins` folder.
 3. **Configure**: Edit `config.yml` to customize AI settings, prompts, and suggestions.
 4. **Reload**: Use `/ollamachat reload` to apply changes.
