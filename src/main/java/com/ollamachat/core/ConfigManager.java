@@ -82,6 +82,15 @@ public class ConfigManager {
         }
         if (!config.contains("suggested-response-cooldown")) config.set("suggested-response-cooldown", 10);
         if (!config.contains("suggested-response-presets-enabled")) config.set("suggested-response-presets-enabled", true);
+        if (!config.contains("database")) {
+            config.set("database.type", "sqlite");
+            config.set("database.mysql.host", "localhost");
+            config.set("database.mysql.port", 3306);
+            config.set("database.mysql.database", "ollamachat");
+            config.set("database.mysql.username", "root");
+            config.set("database.mysql.password", "");
+            config.set("database.mysql.pool-size", 10);
+        }
 
         plugin.saveConfig();
     }
@@ -313,4 +322,5 @@ public class ConfigManager {
         }
     }
 }
+
 

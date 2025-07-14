@@ -28,7 +28,7 @@ public class Ollamachat extends JavaPlugin {
         configManager.initialize();
 
         try {
-            databaseManager = new DatabaseManager();
+            databaseManager = new DatabaseManager(this);
         } catch (Exception e) {
             getLogger().severe("Failed to initialize DatabaseManager: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -88,6 +88,8 @@ public class Ollamachat extends JavaPlugin {
         return playerSuggestionToggles;
     }
 }
+
+
 
 
 

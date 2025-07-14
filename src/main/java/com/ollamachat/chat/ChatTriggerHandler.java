@@ -1,3 +1,4 @@
+
 package com.ollamachat.chat;
 
 import com.google.gson.Gson;
@@ -67,6 +68,9 @@ public class ChatTriggerHandler implements Listener {
         CompletableFuture.runAsync(() -> {
             try {
                 UUID playerUuid = player.getUniqueId();
+                // Save player info to ensure uuid exists in players table
+                plugin.getChatHistoryManager().savePlayerInfo(player);
+
                 String conversationName = configManager.getSelectedConversations()
                         .computeIfAbsent(playerUuid, k -> new HashMap<>())
                         .getOrDefault(aiName, null);
@@ -153,4 +157,6 @@ public class ChatTriggerHandler implements Listener {
         player.sendMessage(errorMessage);
     }
 }
+
+
 
