@@ -1,4 +1,3 @@
-
 package com.ollamachat.chat;
 
 import com.google.gson.Gson;

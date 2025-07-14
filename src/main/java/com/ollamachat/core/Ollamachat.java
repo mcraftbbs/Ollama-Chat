@@ -1,7 +1,9 @@
+
 package com.ollamachat.core;
 
 import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DatabaseManager;
+import com.ollamachat.DependencyLoader;
 import com.ollamachat.ProgressManager;
 import com.ollamachat.chat.ChatTriggerHandler;
 import com.ollamachat.chat.SuggestedResponseHandler;
@@ -24,11 +26,23 @@ public class Ollamachat extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Load dependencies first
+        DependencyLoader dependencyLoader = new DependencyLoader(this);
+        ClassLoader dependencyClassLoader;
+        try {
+            dependencyLoader.loadDependencies();
+            dependencyClassLoader = dependencyLoader.getClass().getClassLoader();
+        } catch (Exception e) {
+            getLogger().severe("Failed to load dependencies: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         configManager = new ConfigManager(this);
         configManager.initialize();
 
         try {
-            databaseManager = new DatabaseManager(this);
+            databaseManager = new DatabaseManager(this, dependencyClassLoader);
         } catch (Exception e) {
             getLogger().severe("Failed to initialize DatabaseManager: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -88,6 +102,9 @@ public class Ollamachat extends JavaPlugin {
         return playerSuggestionToggles;
     }
 }
+
+
+
 
 
 

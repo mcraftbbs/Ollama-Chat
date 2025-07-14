@@ -53,7 +53,6 @@ database:
     database: ollamachat
     username: root
     password: ""
-    pool-size: 10
 
 
 # Default prompt to prepend to user inputs (empty for none)

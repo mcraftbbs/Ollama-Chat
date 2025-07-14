@@ -5,10 +5,8 @@ import com.google.gson.JsonObject;
 import com.ollamachat.AIService;
 import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.*;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -60,7 +58,8 @@ public class SuggestedResponseHandler {
             int cooldown = configManager.getSuggestedResponseCooldown();
             long lastTime = lastSuggestionTimes.get(player.getUniqueId());
             long secondsRemaining = cooldown - (System.currentTimeMillis() - lastTime) / 1000;
-            player.sendMessage(Component.text(configManager.getMessage("suggests-rate-limit", Map.of("seconds", String.valueOf(secondsRemaining))), NamedTextColor.RED));
+            sendMessage(player, ChatColor.RED + configManager.getMessage("suggests-rate-limit",
+                    Map.of("seconds", String.valueOf(secondsRemaining))));
             return;
         }
 
@@ -119,40 +118,56 @@ public class SuggestedResponseHandler {
                 }
 
                 if (player.isOnline() && !suggestedResponses.isEmpty()) {
-                    player.sendMessage(Component.text(configManager.getMessage("suggested-responses-header", null), NamedTextColor.GREEN));
+                    sendMessage(player, ChatColor.GREEN + configManager.getMessage("suggested-responses-header", null));
                     for (String response : suggestedResponses) {
                         if (response.length() > configManager.getMaxResponseLength()) {
                             response = response.substring(0, configManager.getMaxResponseLength()) + "...";
-                            player.sendMessage(Component.text(configManager.getMessage("response-truncated", null), NamedTextColor.YELLOW));
+                            sendMessage(player, ChatColor.YELLOW + configManager.getMessage("response-truncated", null));
                         }
-                        String prefix = configManager.getMessage("suggested-response-prefix", null);
-                        String command = "/aichat " + originalAIName + " " + response.replace("\"", "\\\"");
-                        Component message = Component.text(prefix + response)
-                                .color(NamedTextColor.WHITE)
-                                .clickEvent(ClickEvent.runCommand(command))
-                                .hoverEvent(HoverEvent.showText(Component.text(configManager.getMessage("suggested-response-hover", null), NamedTextColor.YELLOW)));
-                        player.sendMessage(message);
+                        sendClickableMessage(player,
+                                configManager.getMessage("suggested-response-prefix", null) + response,
+                                "/aichat " + originalAIName + " " + response.replace("\"", "\\\""),
+                                configManager.getMessage("suggested-response-hover", null));
                     }
                 }
             });
         } else if (player.isOnline() && !suggestedResponses.isEmpty()) {
-            player.sendMessage(Component.text(configManager.getMessage("suggested-responses-header", null), NamedTextColor.GREEN));
+            sendMessage(player, ChatColor.GREEN + configManager.getMessage("suggested-responses-header", null));
             for (String response : suggestedResponses) {
                 if (response.length() > configManager.getMaxResponseLength()) {
                     response = response.substring(0, configManager.getMaxResponseLength()) + "...";
-                    player.sendMessage(Component.text(configManager.getMessage("response-truncated", null), NamedTextColor.YELLOW));
+                    sendMessage(player, ChatColor.YELLOW + configManager.getMessage("response-truncated", null));
                 }
-                String prefix = configManager.getMessage("suggested-response-prefix", null);
-                String command = "/aichat " + originalAIName + " " + response.replace("\"", "\\\"");
-                Component message = Component.text(prefix + response)
-                        .color(NamedTextColor.WHITE)
-                        .clickEvent(ClickEvent.runCommand(command))
-                        .hoverEvent(HoverEvent.showText(Component.text(configManager.getMessage("suggested-response-hover", null), NamedTextColor.YELLOW)));
-                player.sendMessage(message);
+                sendClickableMessage(player,
+                        configManager.getMessage("suggested-response-prefix", null) + response,
+                        "/aichat " + originalAIName + " " + response.replace("\"", "\\\""),
+                        configManager.getMessage("suggested-response-hover", null));
             }
         }
     }
+
+    private void sendMessage(Player player, String message) {
+        if (player.isOnline()) {
+            player.sendMessage(message);
+        }
+    }
+
+    private void sendClickableMessage(Player player, String text, String command, String hoverText) {
+        TextComponent message = new TextComponent(text);
+        message.setColor(ChatColor.WHITE);
+        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder(hoverText).color(ChatColor.YELLOW).create()));
+        player.spigot().sendMessage(message);
+    }
 }
+
+
+
+
+
+
+
 
 
 

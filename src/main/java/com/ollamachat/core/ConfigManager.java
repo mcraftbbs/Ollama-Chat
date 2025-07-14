@@ -89,7 +89,6 @@ public class ConfigManager {
             config.set("database.mysql.database", "ollamachat");
             config.set("database.mysql.username", "root");
             config.set("database.mysql.password", "");
-            config.set("database.mysql.pool-size", 10);
         }
 
         plugin.saveConfig();
