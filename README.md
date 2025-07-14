@@ -129,6 +129,16 @@ suggested-response-model-toggles:
   - "llama3"
 suggested-response-cooldown: 10
 
+# Database (for mysql, set database.type: mysql.)
+database:
+  type: sqlite
+  mysql:
+    host: localhost
+    port: 3306
+    database: ollamachat
+    username: root
+    password: ""
+
 # Default prompt
 default-prompt: ""
 
