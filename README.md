@@ -14,9 +14,8 @@
 - **Prompt Management**: Create, delete, list, select, or clear custom prompts to tailor AI interactions.
 - **Conversation Management**: Start, switch, delete, or view player-specific conversations with AI entities.
 - **Smart Response Suggestions**: Generate configurable, clickable follow-up suggestions with hover text and rate limiting.
-- **Tab Completion**: Enhanced usability with Tab completion for `/ollamachat` subcommands.
 - **Progress Display**: Visual status bar for prompt answer generation (0% to 100%).
-- **Configurable Settings**: Customize suggestion count, prompt templates, preset responses, and model toggles.
+- **Public API**: OllamaChatAPI for plugin extensibility and AI query support.
 
 ## Usage
 
@@ -90,7 +89,7 @@ ollama-enabled: true
 
 # Streaming settings
 stream-settings:
-  enabled: true
+  enabled: true      # Whether to enable streaming for AI responses
 
 # Chat
 trigger-prefixes:
@@ -98,52 +97,62 @@ trigger-prefixes:
   - "@ai"
 
 # Length
-max-response-length: 500
+max-response-length: 500  # Maximum length of AI responses in characters
 
 # History
-max-history: 5
+max-history: 5  # Maximum number of chat history entries to retain per conversation
 
 # Language Settings
-language: "en_us"
+language: "en_us"  # Language file to use (e.g., en_us.json)
 
 # Progress Display Settings
 progress-display:
-  enabled: true
-  type: "bossbar"
-  color: "BLUE"
-  style: "SOLID"
-  update-interval: 1
+  enabled: true               # Whether to enable progress display
+  type: "bossbar"            # Display type (bossbar or actionbar)
+  color: "BLUE"              # BossBar color (BLUE, GREEN, RED, etc.)
+  style: "SOLID"             # BossBar style (SOLID, SEGMENTED_6, etc.)
+  update-interval: 1         # Progress update frequency (in seconds)
 
 # Suggested Response
-suggested-responses-enabled: false
+suggested-responses-enabled: false  # Whether to enable suggested responses
 suggested-response-models:
-  - "llama3"
-suggested-response-count: 3
+  - "llama3"  # AI models used for generating suggested responses
+suggested-response-count: 3  # Number of suggested responses to generate
 suggested-response-prompt: "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3"
 suggested-response-presets:
   - "I see what you mean."
   - "That's interesting!"
   - "Tell me more about that."
-suggested-response-presets-enabled: false
 suggested-response-model-toggles:
-  - "llama3"
-suggested-response-cooldown: 10
+  llama3: true  # Toggle for each model in suggested-response-models
+suggested-response-cooldown: 10  # Cooldown between suggested responses (in seconds)
+suggested-response-presets-enabled: false  # Whether to enable preset suggested responses
 
-# Database (for mysql, set database.type: mysql.)
+# Database
 database:
-  type: sqlite
+  type: sqlite  # Database type (sqlite or mysql)
   mysql:
     host: localhost
     port: 3306
     database: ollamachat
     username: root
     password: ""
+    hikari:  # HikariCP connection pool settings for MySQL
+      maximum-pool-size: 10  # Maximum number of connections in the pool
+      minimum-idle: 2        # Minimum number of idle connections
+      connection-timeout: 30000  # Connection timeout in milliseconds
+      idle-timeout: 600000   # Idle connection timeout in milliseconds
+      max-lifetime: 1800000  # Maximum lifetime of a connection in milliseconds
+      cache-prep-stmts: true  # Cache prepared statements
+      prep-stmt-cache-size: 250  # Prepared statement cache size
+      prep-stmt-cache-sql-limit: 2048  # SQL limit for prepared statement cache
 
-# Default prompt
+# Default prompt to prepend to user inputs (empty for none)
 default-prompt: ""
 
 # Custom prompts
 prompts:
+# Example:
 # friendly: "You are a friendly assistant who responds in a cheerful tone."
 # formal: "You are a professional assistant who responds formally."
 
@@ -155,7 +164,9 @@ other-ai-configs:
     model: "gpt-4"
     enabled: false
     messages-format: true
+
 ```
+
 
 ## Contributing
 
@@ -167,7 +178,7 @@ Licensed under the MIT License. See [LICENSE](https://github.com/mcraftbbs/Ollam
 
 ## Support
 
-For help, visit our [GitHub repository](https://github.com/mcraftbbs/Ollama-Chat) or join our [community server](https://chat.sarskin.cn/invite/iHgI6LTX).
+For help, visit our [GitHub repository](https://github.com/mcraftbbs/Ollama-Chat), join our [community server](https://chat.sarskin.cn/invite/iHgI6LTX), or connect on [Discord](https://discord.gg/rgjSkRU9).
 
 
 **Note**: **Ollama-Chat** is actively developed, with new features and improvements being added regularly. Stay tuned for updates!
