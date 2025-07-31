@@ -1,6 +1,8 @@
-
 package com.ollamachat;
 
+import com.ollamachat.core.Ollamachat;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,10 +17,8 @@ public class DatabaseManager {
     private final Logger logger;
     private String databaseType; // "sqlite" or "mysql"
     private Connection sqliteConnection; // For SQLite, maintain a single connection
+    private HikariDataSource dataSource; // For MySQL connection pooling
     private final ClassLoader dependencyClassLoader;
-    private String mysqlUrl;
-    private String mysqlUsername;
-    private String mysqlPassword;
 
     public DatabaseManager(JavaPlugin plugin, ClassLoader dependencyClassLoader) {
         this.plugin = plugin;
@@ -47,19 +47,12 @@ public class DatabaseManager {
 
     private void initializeSQLite() {
         try {
-            // Use the dependency class loader to load SQLite driver
             Class.forName("org.sqlite.JDBC", true, dependencyClassLoader);
-        } catch (ClassNotFoundException e) {
-            logger.severe("SQLite JDBC driver not found. Ensure 'sqlite-jdbc' dependency is included in the plugin.");
-            throw new RuntimeException("SQLite driver not found", e);
-        }
-
-        try {
             databaseType = "sqlite";
             sqliteConnection = DriverManager.getConnection("jdbc:sqlite:plugins/OllamaChat/chat_history.db");
             sqliteConnection.setAutoCommit(true);
             logger.info("SQLite database initialized successfully.");
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             logger.severe("Failed to initialize SQLite database: " + e.getMessage());
             throw new RuntimeException("SQLite initialization failed", e);
         }
@@ -67,11 +60,9 @@ public class DatabaseManager {
 
     private void initializeMySQL() {
         try {
-            // Use the dependency class loader to load MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver", true, dependencyClassLoader);
         } catch (ClassNotFoundException e) {
-            logger.severe("MySQL JDBC driver not found. Ensure 'mysql-connector-java' dependency is included in the plugin.");
-            logger.warning("Falling back to SQLite due to missing MySQL driver.");
+            logger.severe("MySQL JDBC driver not found. Falling back to SQLite.");
             initializeSQLite();
             return;
         }
@@ -81,15 +72,26 @@ public class DatabaseManager {
             String host = config.getString("database.mysql.host", "localhost");
             int port = config.getInt("database.mysql.port", 3306);
             String database = config.getString("database.mysql.database", "ollamachat");
-            mysqlUsername = config.getString("database.mysql.username", "root");
-            mysqlPassword = config.getString("database.mysql.password", "");
-            mysqlUrl = String.format("jdbc:mysql://%s:%d/%s?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true", host, port, database);
+            String username = config.getString("database.mysql.username", "root");
+            String password = config.getString("database.mysql.password", "");
 
-            // Test connection
-            try (Connection conn = DriverManager.getConnection(mysqlUrl, mysqlUsername, mysqlPassword)) {
-                logger.info("MySQL database initialized successfully.");
-            }
-        } catch (SQLException e) {
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(String.format("jdbc:mysql://%s:%d/%s?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true", host, port, database));
+            hikariConfig.setUsername(username);
+            hikariConfig.setPassword(password);
+            // Load HikariCP settings from config
+            hikariConfig.setMaximumPoolSize(config.getInt("database.mysql.hikari.maximum-pool-size", 10));
+            hikariConfig.setMinimumIdle(config.getInt("database.mysql.hikari.minimum-idle", 2));
+            hikariConfig.setConnectionTimeout(config.getLong("database.mysql.hikari.connection-timeout", 30000));
+            hikariConfig.setIdleTimeout(config.getLong("database.mysql.hikari.idle-timeout", 600000));
+            hikariConfig.setMaxLifetime(config.getLong("database.mysql.hikari.max-lifetime", 1800000));
+            hikariConfig.addDataSourceProperty("cachePrepStmts", config.getString("database.mysql.hikari.cache-prep-stmts", "true"));
+            hikariConfig.addDataSourceProperty("prepStmtCacheSize", config.getString("database.mysql.hikari.prep-stmt-cache-size", "250"));
+            hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", config.getString("database.mysql.hikari.prep-stmt-cache-sql-limit", "2048"));
+
+            dataSource = new HikariDataSource(hikariConfig);
+            logger.info("MySQL database initialized with HikariCP successfully.");
+        } catch (Exception e) {
             logger.severe("Failed to initialize MySQL database: " + e.getMessage());
             logger.warning("Falling back to SQLite due to MySQL initialization failure.");
             initializeSQLite();
@@ -104,7 +106,7 @@ public class DatabaseManager {
             }
             return sqliteConnection;
         } else {
-            return DriverManager.getConnection(mysqlUrl, mysqlUsername, mysqlPassword);
+            return dataSource.getConnection();
         }
     }
 
@@ -137,17 +139,14 @@ public class DatabaseManager {
     }
 
     public void savePlayerInfo(UUID uuid, String username) {
-        String sql;
-        if (databaseType.equals("sqlite")) {
-            sql = "INSERT OR REPLACE INTO players (uuid, username) VALUES (?, ?)";
-        } else {
-            sql = "INSERT INTO players (uuid, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = ?";
-        }
+        String sql = databaseType.equals("sqlite")
+                ? "INSERT OR REPLACE INTO players (uuid, username) VALUES (?, ?)"
+                : "INSERT INTO players (uuid, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = ?";
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, uuid.toString());
             pstmt.setString(2, username);
             if (databaseType.equals("mysql")) {
-                pstmt.setString(3, username); // For ON DUPLICATE KEY UPDATE
+                pstmt.setString(3, username);
             }
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -313,17 +312,12 @@ public class DatabaseManager {
             if (databaseType.equals("sqlite") && sqliteConnection != null && !sqliteConnection.isClosed()) {
                 sqliteConnection.close();
             }
-            // No need to close MySQL connections explicitly as they are managed per query
+            if (dataSource != null) {
+                dataSource.close();
+            }
         } catch (SQLException e) {
             logger.severe("Failed to close database: " + e.getMessage());
             e.printStackTrace();
         }
     }
 }
-
-
-
-
-
-
-

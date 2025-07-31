@@ -5,7 +5,7 @@ ollama-enabled: true
 
 # Streaming settings
 stream-settings:
-  enabled: true      # Whether to enable streaming
+  enabled: true      # Whether to enable streaming for AI responses
 
 # Chat
 trigger-prefixes:
@@ -13,13 +13,13 @@ trigger-prefixes:
   - "@ai"
 
 # Length
-max-response-length: 500
+max-response-length: 500  # Maximum length of AI responses in characters
 
 # History
-max-history: 5
+max-history: 5  # Maximum number of chat history entries to retain per conversation
 
 # Language Settings
-language: "en_us"
+language: "en_us"  # Language file to use (e.g., en_us.json)
 
 # Progress Display Settings
 progress-display:
@@ -30,30 +30,38 @@ progress-display:
   update-interval: 1         # Progress update frequency (in seconds)
 
 # Suggested Response
-suggested-responses-enabled: false
+suggested-responses-enabled: false  # Whether to enable suggested responses
 suggested-response-models:
-  - "llama3"
-suggested-response-count: 3
+  - "llama3"  # AI models used for generating suggested responses
+suggested-response-count: 3  # Number of suggested responses to generate
 suggested-response-prompt: "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3"
 suggested-response-presets:
   - "I see what you mean."
   - "That's interesting!"
   - "Tell me more about that."
 suggested-response-model-toggles:
-  - llama3
-suggested-response-cooldown: 10
-suggested-response-presets-enabled: false
+  llama3: true  # Toggle for each model in suggested-response-models
+suggested-response-cooldown: 10  # Cooldown between suggested responses (in seconds)
+suggested-response-presets-enabled: false  # Whether to enable preset suggested responses
 
-# Database (for mysql, set database.type: mysql.)
+# Database
 database:
-  type: sqlite
+  type: sqlite  # Database type (sqlite or mysql)
   mysql:
     host: localhost
     port: 3306
     database: ollamachat
     username: root
     password: ""
-
+    hikari:  # HikariCP connection pool settings for MySQL
+      maximum-pool-size: 10  # Maximum number of connections in the pool
+      minimum-idle: 2        # Minimum number of idle connections
+      connection-timeout: 30000  # Connection timeout in milliseconds
+      idle-timeout: 600000   # Idle connection timeout in milliseconds
+      max-lifetime: 1800000  # Maximum lifetime of a connection in milliseconds
+      cache-prep-stmts: true  # Cache prepared statements
+      prep-stmt-cache-size: 250  # Prepared statement cache size
+      prep-stmt-cache-sql-limit: 2048  # SQL limit for prepared statement cache
 
 # Default prompt to prepend to user inputs (empty for none)
 default-prompt: ""
@@ -72,4 +80,5 @@ other-ai-configs:
     model: "gpt-4"
     enabled: false
     messages-format: true
+
 

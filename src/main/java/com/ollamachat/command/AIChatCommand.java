@@ -44,5 +44,3 @@ public class AIChatCommand implements CommandExecutor {
         return true;
     }
 }
-
-

@@ -34,6 +34,7 @@ public class DependencyLoader {
             List<Dependency> dependencies = new ArrayList<>();
             dependencies.add(new Dependency("com.mysql", "mysql-connector-j", "8.0.33"));
             dependencies.add(new Dependency("org.xerial", "sqlite-jdbc", "3.46.0.0"));
+            dependencies.add(new Dependency("com.zaxxer", "HikariCP", "5.1.0")); // Add HikariCP
 
             // Download each dependency
             List<URL> jarUrls = new ArrayList<>();

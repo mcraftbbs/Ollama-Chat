@@ -1,9 +1,9 @@
 name: OllamaChat
-version: '1.1.4'
+version: '${version}'
 main: com.ollamachat.core.Ollamachat
 api-version: '1.21'
 authors: [xwwsdd]
-description: A plugin used to connect Ollama and OtherAI with Minecraft.
+description: A plugin used to connect Ollama and OtherAI with Minecraft, providing a public API for other plugins.
 website: https://chat.sarskin.cn/invite/iHgI6LTX
 
 commands:

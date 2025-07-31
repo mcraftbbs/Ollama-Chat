@@ -1,10 +1,11 @@
-
 package com.ollamachat.core;
 
 import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DatabaseManager;
 import com.ollamachat.DependencyLoader;
 import com.ollamachat.ProgressManager;
+import com.ollamachat.api.OllamaChatAPI;
+import com.ollamachat.api.OllamaChatAPIImpl;
 import com.ollamachat.chat.ChatTriggerHandler;
 import com.ollamachat.chat.SuggestedResponseHandler;
 import com.ollamachat.command.AIChatCommand;
@@ -23,10 +24,10 @@ public class Ollamachat extends JavaPlugin {
     private ProgressManager progressManager;
     private SuggestedResponseHandler suggestedResponseHandler;
     private Map<UUID, Boolean> playerSuggestionToggles;
+    private OllamaChatAPI api;
 
     @Override
     public void onEnable() {
-        // Load dependencies first
         DependencyLoader dependencyLoader = new DependencyLoader(this);
         ClassLoader dependencyClassLoader;
         try {
@@ -54,15 +55,16 @@ public class Ollamachat extends JavaPlugin {
         progressManager = new ProgressManager(this);
         suggestedResponseHandler = new SuggestedResponseHandler(this);
         playerSuggestionToggles = new HashMap<>();
+        api = new OllamaChatAPIImpl(this);
 
-        // Register events
         getServer().getPluginManager().registerEvents(new ChatTriggerHandler(this), this);
 
-        // Register commands
         getCommand("ollamachat").setExecutor(new OllamaChatCommand(this));
         getCommand("ollamachat").setTabCompleter(new OllamaChatTabCompleter(this));
         getCommand("aichat").setExecutor(new AIChatCommand(this));
         getCommand("aichat").setTabCompleter(new OllamaChatTabCompleter(this));
+
+        getLogger().info("OllamaChat API is available for other plugins.");
     }
 
     @Override
@@ -77,7 +79,10 @@ public class Ollamachat extends JavaPlugin {
         }
     }
 
-    // Getter methods
+    public OllamaChatAPI getAPI() {
+        return api;
+    }
+
     public ConfigManager getConfigManager() {
         return configManager;
     }
@@ -102,6 +107,7 @@ public class Ollamachat extends JavaPlugin {
         return playerSuggestionToggles;
     }
 }
+
 
 
 

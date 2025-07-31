@@ -136,8 +136,3 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 .collect(Collectors.toList());
     }
 }
-
-
-
-
-

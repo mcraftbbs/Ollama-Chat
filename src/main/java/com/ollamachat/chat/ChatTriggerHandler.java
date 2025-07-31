@@ -76,7 +76,7 @@ public class ChatTriggerHandler implements Listener {
                 String conversationId = conversationName != null
                         ? plugin.getChatHistoryManager().getConversationId(playerUuid, aiName, conversationName)
                         : null;
-                String history = plugin.getChatHistoryManager().getChatHistory(playerUuid, aiName, conversationId);
+                String history = plugin.getChatHistoryManager().getChatHistory(playerUuid, aiName, conversationId, configManager.getMaxHistory());
                 String selectedPrompt = configManager.getPrompts().getOrDefault(configManager.getDefaultPrompt(), "");
                 String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
 

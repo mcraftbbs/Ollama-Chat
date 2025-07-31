@@ -2,7 +2,6 @@ package com.ollamachat;
 
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,7 +46,7 @@ public class ChatHistoryManager {
         databaseManager.saveChatHistory(playerUuid, aiModel, conversationId, prompt, response);
     }
 
-    public String getChatHistory(UUID playerUuid, String aiModel, String conversationId) {
-        return databaseManager.getChatHistory(playerUuid, aiModel, conversationId, maxHistory);
+    public String getChatHistory(UUID playerUuid, String aiModel, String conversationId, int maxHistory) {
+        return databaseManager.getChatHistory(playerUuid, aiModel, conversationId, this.maxHistory);
     }
 }
