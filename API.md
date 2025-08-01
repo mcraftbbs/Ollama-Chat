@@ -8,11 +8,57 @@ This documentation is for `OllamaChat` version 1.1.5, compatible with Minecraft 
 ## Getting Started
 
 To use the `OllamaChat` API, your plugin must:
-1. Declare a soft dependency on `OllamaChat` in your `plugin.yml`.
-2. Check if the `OllamaChat` plugin is enabled and retrieve the API instance.
-3. Use the `OllamaChatAPI` interface to call methods.
+1. Add the JitPack repository and `OllamaChat` dependency to your build file.
+2. Declare a soft dependency on `OllamaChat` in your `plugin.yml`.
+3. Check if the `OllamaChat` plugin is enabled and retrieve the API instance.
+4. Use the `OllamaChatAPI` interface to call methods.
 
-### Step 1: Add Dependency in `plugin.yml`
+### Step 1: Add JitPack Repository and Dependency
+
+To include the `OllamaChat` library in your project, configure your build system to use the JitPack repository and add the `OllamaChat` dependency.
+
+#### For Gradle Users (settings.gradle)
+Add the JitPack repository to your `settings.gradle` at the end of the `repositories` block:
+
+```gradle
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+Add the dependency in your `build.gradle`:
+
+```gradle
+dependencies {
+    implementation 'com.github.mcraftbbs:Ollama-Chat:1.1.5'
+}
+```
+
+#### For Maven Users (pom.xml)
+Add the JitPack repository and dependency to your `pom.xml`:
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.mcraftbbs</groupId>
+        <artifactId>Ollama-Chat</artifactId>
+        <version>1.1.5</version>
+    </dependency>
+</dependencies>
+```
+
+### Step 2: Add Dependency in `plugin.yml`
 
 Add `OllamaChat` as a soft dependency in your `plugin.yml` to ensure it loads after `OllamaChat` if present:
 
@@ -26,7 +72,7 @@ softdepend: [OllamaChat]
 
 The `softdepend` ensures your plugin loads after `OllamaChat` without requiring it to be present.
 
-### Step 2: Accessing the API
+### Step 3: Accessing the API
 
 To access the `OllamaChatAPI`, check if the `OllamaChat` plugin is enabled and retrieve the API instance from the main plugin class. Here's an example:
 
@@ -36,23 +82,23 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class YourPlugin extends JavaPlugin {
-    private OllamaChatAPI ollamaChatAPI;
+  private OllamaChatAPI ollamaChatAPI;
 
-    @Override
-    public void onEnable() {
-        Plugin ollamaPlugin = getServer().getPluginManager().getPlugin("OllamaChat");
-        if (ollamaPlugin != null && ollamaPlugin.isEnabled()) {
-            ollamaChatAPI = ((com.ollamachat.core.Ollamachat) ollamaPlugin).getAPI();
-            getLogger().info("Successfully hooked into OllamaChat API!");
-        } else {
-            getLogger().warning("OllamaChat plugin not found or disabled!");
-            ollamaChatAPI = null;
-        }
+  @Override
+  public void onEnable() {
+    Plugin ollamaPlugin = getServer().getPluginManager().getPlugin("OllamaChat");
+    if (ollamaPlugin != null && ollamaPlugin.isEnabled()) {
+      ollamaChatAPI = ((com.ollamachat.core.Ollamachat) ollamaPlugin).getAPI();
+      getLogger().info("Successfully hooked into OllamaChat API!");
+    } else {
+      getLogger().warning("OllamaChat plugin not found or disabled!");
+      ollamaChatAPI = null;
     }
+  }
 
-    public OllamaChatAPI getOllamaChatAPI() {
-        return ollamaChatAPI;
-    }
+  public OllamaChatAPI getOllamaChatAPI() {
+    return ollamaChatAPI;
+  }
 }
 ```
 
