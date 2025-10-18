@@ -28,7 +28,6 @@ public class DependencyLoader {
                 return false;
             }
 
-            // 定义依赖
             List<Dependency> dependencies = List.of(
                     new Dependency("com.mysql", "mysql-connector-j", "8.0.33"),
                     new Dependency("org.xerial", "sqlite-jdbc", "3.46.0.0"),
@@ -60,7 +59,6 @@ public class DependencyLoader {
         String fileName = dep.artifactId + "-" + dep.version + ".jar";
         File file = new File(libDir, fileName);
 
-        // 已存在则直接返回
         if (file.exists()) {
             return file;
         }
@@ -83,9 +81,6 @@ public class DependencyLoader {
         }
     }
 
-    /**
-     * 将 JAR 动态注入到 Bukkit 的 PluginClassLoader。
-     */
     private boolean injectToPluginClassLoader(File jarFile) {
         try {
             ClassLoader pluginClassLoader = plugin.getClass().getClassLoader();
@@ -116,9 +111,6 @@ public class DependencyLoader {
         }
     }
 
-    /**
-     * 内部依赖描述类
-     */
     private static class Dependency {
         String groupId;
         String artifactId;
