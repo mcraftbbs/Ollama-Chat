@@ -28,14 +28,9 @@ public class Ollamachat extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        DependencyLoader dependencyLoader = new DependencyLoader(this);
-        ClassLoader dependencyClassLoader;
-        try {
-            dependencyLoader.loadDependencies();
-            dependencyClassLoader = dependencyLoader.getClass().getClassLoader();
-        } catch (Exception e) {
-            getLogger().severe("Failed to load dependencies: " + e.getMessage());
-            getServer().getPluginManager().disablePlugin(this);
+        DependencyLoader loader = new DependencyLoader(this);
+        if (!loader.loadDependencies()) {
+            getLogger().severe("Failed to load dependencies. ");
             return;
         }
 
@@ -43,9 +38,10 @@ public class Ollamachat extends JavaPlugin {
         configManager.initialize();
 
         try {
-            databaseManager = new DatabaseManager(this, dependencyClassLoader);
+            databaseManager = new DatabaseManager(this);
         } catch (Exception e) {
             getLogger().severe("Failed to initialize DatabaseManager: " + e.getMessage());
+            e.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -107,12 +103,3 @@ public class Ollamachat extends JavaPlugin {
         return playerSuggestionToggles;
     }
 }
-
-
-
-
-
-
-
-
-
