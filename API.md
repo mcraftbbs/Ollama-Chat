@@ -53,7 +53,7 @@ Add the JitPack repository and dependency to your `pom.xml`:
     <dependency>
         <groupId>com.github.mcraftbbs</groupId>
         <artifactId>Ollama-Chat</artifactId>
-        <version>1.1.5</version>
+        <version>1.1.6</version>
     </dependency>
 </dependencies>
 ```
