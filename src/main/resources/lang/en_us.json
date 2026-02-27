@@ -47,5 +47,10 @@
   "suggests-rate-limit": "§c[OllamaChat] Please wait {seconds} seconds before generating more suggestions.",
   "suggested-response-hover": "§eClick to send this suggestion as a prompt!",
   "suggests-presets-enabled": "§a[OllamaChat] Suggested response presets have been enabled.",
-  "suggests-presets-disabled": "§c[OllamaChat] Suggested response presets have been disabled."
+  "suggests-presets-disabled": "§c[OllamaChat] Suggested response presets have been disabled.",
+  "search-searching": "§e[OllamaChat] Searching the web...",
+  "search-error": "§cError during web search",
+  "search-empty-query": "§c[OllamaChat] Search query cannot be empty!",
+  "search-invalid-format": "§c[OllamaChat] Invalid search format!",
+  "search-complete": "§a[OllamaChat] Web search completed."
 }

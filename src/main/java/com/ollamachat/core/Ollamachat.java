@@ -1,5 +1,11 @@
 package com.ollamachat.core;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.plugin.java.JavaPlugin;
+
 import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DatabaseManager;
 import com.ollamachat.DependencyLoader;
@@ -8,14 +14,10 @@ import com.ollamachat.api.OllamaChatAPI;
 import com.ollamachat.api.OllamaChatAPIImpl;
 import com.ollamachat.chat.ChatTriggerHandler;
 import com.ollamachat.chat.SuggestedResponseHandler;
+import com.ollamachat.chat.WebSearchHandler;
 import com.ollamachat.command.AIChatCommand;
 import com.ollamachat.command.OllamaChatCommand;
 import com.ollamachat.command.OllamaChatTabCompleter;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class Ollamachat extends JavaPlugin {
     private ConfigManager configManager;
@@ -23,6 +25,7 @@ public class Ollamachat extends JavaPlugin {
     private ChatHistoryManager chatHistoryManager;
     private ProgressManager progressManager;
     private SuggestedResponseHandler suggestedResponseHandler;
+    private WebSearchHandler webSearchHandler;
     private Map<UUID, Boolean> playerSuggestionToggles;
     private OllamaChatAPI api;
 
@@ -53,7 +56,12 @@ public class Ollamachat extends JavaPlugin {
         playerSuggestionToggles = new HashMap<>();
         api = new OllamaChatAPIImpl(this);
 
-        getServer().getPluginManager().registerEvents(new ChatTriggerHandler(this), this);
+        // Initialize ChatTriggerHandler first, then set WebSearchHandler to avoid circular dependency
+        ChatTriggerHandler chatTriggerHandler = new ChatTriggerHandler(this);
+        webSearchHandler = new WebSearchHandler(this, chatTriggerHandler);
+        chatTriggerHandler.setWebSearchHandler(webSearchHandler);
+
+        getServer().getPluginManager().registerEvents(chatTriggerHandler, this);
 
         getCommand("ollamachat").setExecutor(new OllamaChatCommand(this));
         getCommand("ollamachat").setTabCompleter(new OllamaChatTabCompleter(this));
@@ -97,6 +105,10 @@ public class Ollamachat extends JavaPlugin {
 
     public SuggestedResponseHandler getSuggestedResponseHandler() {
         return suggestedResponseHandler;
+    }
+
+    public WebSearchHandler getWebSearchHandler() {
+        return webSearchHandler;
     }
 
     public Map<UUID, Boolean> getPlayerSuggestionToggles() {

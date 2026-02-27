@@ -1,10 +1,11 @@
 package com.ollamachat.chat;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.ollamachat.AIService;
-import com.ollamachat.core.ConfigManager;
-import com.ollamachat.core.Ollamachat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
@@ -12,17 +13,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.ollamachat.AIService;
+import com.ollamachat.core.ConfigManager;
+import com.ollamachat.core.Ollamachat;
 
 public class ChatTriggerHandler implements Listener {
     private final Ollamachat plugin;
     private final ConfigManager configManager;
     private final AIService aiService;
     private final SuggestedResponseHandler suggestedResponseHandler;
+    private WebSearchHandler webSearchHandler;
     private final Gson gson;
 
     public ChatTriggerHandler(Ollamachat plugin) {
@@ -30,15 +32,29 @@ public class ChatTriggerHandler implements Listener {
         this.configManager = plugin.getConfigManager();
         this.aiService = new AIService();
         this.suggestedResponseHandler = new SuggestedResponseHandler(plugin);
+        this.webSearchHandler = null;
         this.gson = new Gson();
+    }
+
+    /**
+     * Sets the WebSearchHandler after initialization to avoid circular dependency
+     */
+    public void setWebSearchHandler(WebSearchHandler webSearchHandler) {
+        this.webSearchHandler = webSearchHandler;
     }
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        if (!configManager.isOllamaEnabled()) return;
-
         String message = event.getMessage();
         Player player = event.getPlayer();
+
+        if (webSearchHandler != null && webSearchHandler.isWebSearchTrigger(message)) {
+            event.setCancelled(true);
+            webSearchHandler.processWebSearchMessage(player, message);
+            return;
+        }
+
+        if (!configManager.isOllamaEnabled()) return;
 
         for (String prefix : configManager.getTriggerPrefixes()) {
             if (message.startsWith(prefix)) {
@@ -136,11 +152,11 @@ public class ChatTriggerHandler implements Listener {
                 }
                 plugin.getProgressManager().complete(player);
             } catch (Exception e) {
-                plugin.getLogger().severe("Error processing " + aiName + " request: " + e.getMessage());
+                String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                plugin.getLogger().severe("Error processing " + aiName + " request: " + errorMsg);
                 if (player.isOnline()) {
                     sendErrorMessage(player, configManager.getMessage("error-prefix", null) + "Failed to get response from " + aiName);
                 }
-                plugin.getProgressManager().error(player);
             }
         });
     }

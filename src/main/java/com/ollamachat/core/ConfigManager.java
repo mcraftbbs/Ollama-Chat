@@ -1,14 +1,19 @@
 package com.ollamachat.core;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class ConfigManager {
     private final Ollamachat plugin;
@@ -34,6 +39,8 @@ public class ConfigManager {
     private Map<String, Boolean> suggestedResponseModelToggles;
     private int suggestedResponseCooldown;
     private boolean suggestedResponsePresetsEnabled;
+    private String braveSearchApiKey;
+    private boolean braveSearchEnabled;
 
     public ConfigManager(Ollamachat plugin) {
         this.plugin = plugin;
@@ -89,6 +96,10 @@ public class ConfigManager {
             config.set("database.mysql.database", "ollamachat");
             config.set("database.mysql.username", "root");
             config.set("database.mysql.password", "");
+        }
+        if (!config.contains("brave-search")) {
+            config.set("brave-search.enabled", false);
+            config.set("brave-search.api-key", "");
         }
 
         plugin.saveConfig();
@@ -161,6 +172,9 @@ public class ConfigManager {
                 suggestedResponseModelToggles.put(model, config.getBoolean("suggested-response-model-toggles." + model, true));
             }
         }
+
+        braveSearchEnabled = config.getBoolean("brave-search.enabled", false);
+        braveSearchApiKey = config.getString("brave-search.api-key", "");
     }
 
     private void loadLanguageFile(String language) {
@@ -289,6 +303,20 @@ public class ConfigManager {
 
     public int getSuggestedResponseCooldown() {
         return suggestedResponseCooldown;
+    }
+
+    public String getBraveSearchApiKey() {
+        return braveSearchApiKey;
+    }
+
+    public boolean isBraveSearchEnabled() {
+        return braveSearchEnabled;
+    }
+
+    public void setBraveSearchEnabled(boolean enabled) {
+        this.braveSearchEnabled = enabled;
+        plugin.getConfig().set("brave-search.enabled", enabled);
+        plugin.saveConfig();
     }
 
     public static class AIConfig {

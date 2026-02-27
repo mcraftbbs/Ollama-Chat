@@ -47,6 +47,10 @@
   "suggests-rate-limit": "§c[OllamaChat] 请等待{seconds}秒后再生成推荐回复",
   "suggested-response-hover": "§e点击发送此推荐内容！",
   "suggests-presets-enabled": "§a[OllamaChat] 已启用预设推荐回复",
-  "suggests-presets-disabled": "§c[OllamaChat] 已启用预设推荐回复"
-}
+  "suggests-presets-disabled": "§c[OllamaChat] 已启用预设推荐回复",
+  "search-searching": "§e[OllamaChat] 正在搜索网络...",
+  "search-error": "§c网络搜索过程中发生错误",
+  "search-empty-query": "§c[OllamaChat] 搜索查询不能为空！",
+  "search-invalid-format": "§c[OllamaChat] 无效的搜索格式！",
+  "search-complete": "§a[OllamaChat] 网络搜索已完成。"
 
