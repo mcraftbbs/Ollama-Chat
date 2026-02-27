@@ -3,7 +3,7 @@
 The `OllamaChat` plugin provides a public API for other Bukkit/Spigot/Paper plugins to interact with its AI chat functionality, including sending queries to AI models, managing conversations, and accessing chat history. This document explains how to use the `OllamaChatAPI` interface to integrate with the plugin.
 
 ## Version
-This documentation is for `OllamaChat` version 1.1.5, compatible with Minecraft 1.21.1.
+This documentation is for `OllamaChat` version 1.1.5+, compatible with Minecraft 1.21.1.
 
 ## Getting Started
 
