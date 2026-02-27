@@ -78,7 +78,10 @@ other-ai-configs:
     api-url: "https://api.openai.com/v1/chat/completions"
     api-key: "your-openai-api-key"
     model: "gpt-4"
-    enabled: false
-    messages-format: true
+
+# Brave Search API Configuration
+brave-search:
+  enabled: false  # Set to true to enable web search functionality
+  api-key: ""  # Your Brave Search API key from https://api.search.brave.com/
 
 
