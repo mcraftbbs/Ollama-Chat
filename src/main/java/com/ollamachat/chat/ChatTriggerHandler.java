@@ -1,11 +1,11 @@
 package com.ollamachat.chat;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.ollamachat.AIService;
+import com.ollamachat.WebSearchService;
+import com.ollamachat.core.ConfigManager;
+import com.ollamachat.core.Ollamachat;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
@@ -13,18 +13,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.ollamachat.AIService;
-import com.ollamachat.core.ConfigManager;
-import com.ollamachat.core.Ollamachat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChatTriggerHandler implements Listener {
     private final Ollamachat plugin;
     private final ConfigManager configManager;
     private final AIService aiService;
     private final SuggestedResponseHandler suggestedResponseHandler;
-    private WebSearchHandler webSearchHandler;
+    private final WebSearchService webSearchService;
     private final Gson gson;
 
     public ChatTriggerHandler(Ollamachat plugin) {
@@ -32,29 +33,16 @@ public class ChatTriggerHandler implements Listener {
         this.configManager = plugin.getConfigManager();
         this.aiService = new AIService();
         this.suggestedResponseHandler = new SuggestedResponseHandler(plugin);
-        this.webSearchHandler = null;
+        this.webSearchService = plugin.getWebSearchService();
         this.gson = new Gson();
-    }
-
-    /**
-     * Sets the WebSearchHandler after initialization to avoid circular dependency
-     */
-    public void setWebSearchHandler(WebSearchHandler webSearchHandler) {
-        this.webSearchHandler = webSearchHandler;
     }
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
+        if (!configManager.isOllamaEnabled()) return;
+
         String message = event.getMessage();
         Player player = event.getPlayer();
-
-        if (webSearchHandler != null && webSearchHandler.isWebSearchTrigger(message)) {
-            event.setCancelled(true);
-            webSearchHandler.processWebSearchMessage(player, message);
-            return;
-        }
-
-        if (!configManager.isOllamaEnabled()) return;
 
         for (String prefix : configManager.getTriggerPrefixes()) {
             if (message.startsWith(prefix)) {
@@ -70,14 +58,16 @@ public class ChatTriggerHandler implements Listener {
 
     public void processAIQuery(Player player, String aiName, String prompt) {
         if (!aiName.equalsIgnoreCase("ollama") && !configManager.getOtherAIEnabled().getOrDefault(aiName, false)) {
-            sendErrorMessage(player, configManager.getMessage("error-prefix", null) + configManager.getMessage("toggle-disabled", Map.of("ai-name", aiName)));
+            sendErrorMessage(player, configManager.getMessage("error-prefix", null) +
+                    configManager.getMessage("toggle-disabled", Map.of("ai-name", aiName)));
             return;
         }
 
         if (plugin.getConfig().getBoolean("progress-display.enabled", true)) {
             BarColor color = BarColor.valueOf(plugin.getConfig().getString("progress-display.color", "BLUE"));
             BarStyle style = BarStyle.valueOf(plugin.getConfig().getString("progress-display.style", "SOLID"));
-            plugin.getProgressManager().startProgress(player, configManager.getMessage("generating-status", null), color, style);
+            plugin.getProgressManager().startProgress(player,
+                    configManager.getMessage("generating-status", null), color, style);
         }
 
         CompletableFuture.runAsync(() -> {
@@ -92,9 +82,41 @@ public class ChatTriggerHandler implements Listener {
                 String conversationId = conversationName != null
                         ? plugin.getChatHistoryManager().getConversationId(playerUuid, aiName, conversationName)
                         : null;
-                String history = plugin.getChatHistoryManager().getChatHistory(playerUuid, aiName, conversationId, configManager.getMaxHistory());
+
+                //
+                boolean shouldSearch = shouldPerformWebSearch(prompt);
+                String searchContext = "";
+
+                if (shouldSearch && configManager.isWebSearchEnabled()) {
+                    player.sendMessage(configManager.getMessage("websearch-starting",
+                            Map.of("query", prompt)));
+
+                    List<WebSearchService.SearchResult> searchResults =
+                            webSearchService.search(prompt, configManager.getWebSearchResultCount()).join();
+
+                    if (!searchResults.isEmpty()) {
+                        searchContext = webSearchService.formatSearchResultsForAI(searchResults, prompt);
+                        player.sendMessage(configManager.getMessage("websearch-completed",
+                                Map.of("count", String.valueOf(searchResults.size()))));
+                    } else {
+                        player.sendMessage(configManager.getMessage("websearch-no-results-short", null));
+                    }
+                }
+
+                String history = plugin.getChatHistoryManager().getChatHistory(playerUuid, aiName,
+                        conversationId, configManager.getMaxHistory());
                 String selectedPrompt = configManager.getPrompts().getOrDefault(configManager.getDefaultPrompt(), "");
-                String context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
+
+                //
+                String context;
+                if (!searchContext.isEmpty()) {
+                    String template = configManager.getWebSearchPromptTemplate();
+                    context = template
+                            .replace("{search_results}", searchContext)
+                            .replace("{prompt}", prompt);
+                } else {
+                    context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
+                }
 
                 String apiUrl, apiKey, model;
                 boolean isMessagesFormat;
@@ -152,13 +174,31 @@ public class ChatTriggerHandler implements Listener {
                 }
                 plugin.getProgressManager().complete(player);
             } catch (Exception e) {
-                String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error";
-                plugin.getLogger().severe("Error processing " + aiName + " request: " + errorMsg);
+                plugin.getLogger().severe("Error processing " + aiName + " request: " + e.getMessage());
                 if (player.isOnline()) {
-                    sendErrorMessage(player, configManager.getMessage("error-prefix", null) + "Failed to get response from " + aiName);
+                    sendErrorMessage(player, configManager.getMessage("error-prefix", null) +
+                            configManager.getMessage("websearch-error", Map.of("error", e.getMessage())));
                 }
+                plugin.getProgressManager().error(player);
             }
         });
+    }
+
+    /**
+     *
+     */
+    private boolean shouldPerformWebSearch(String prompt) {
+        if (!configManager.isWebSearchEnabled() || !configManager.isWebSearchAutoTrigger()) {
+            return false;
+        }
+
+        String lowerPrompt = prompt.toLowerCase();
+        for (String keyword : configManager.getWebSearchTriggerKeywords()) {
+            if (lowerPrompt.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void sendFormattedResponse(Player player, String response) {
@@ -172,6 +212,3 @@ public class ChatTriggerHandler implements Listener {
         player.sendMessage(errorMessage);
     }
 }
-
-
-

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com'
-version = '1.1.7'
+version = '1.1.8'
 
 repositories {
     mavenCentral()
@@ -19,13 +19,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT")
     compileOnly("mysql:mysql-connector-java:8.0.33")
     compileOnly("org.xerial:sqlite-jdbc:3.46.0.0")
     compileOnly("com.zaxxer:HikariCP:5.1.0") // Add HikariCP dependency
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 17
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion

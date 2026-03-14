@@ -1,22 +1,34 @@
 {
-  "usage-ollamachat": "§e[OllamaChat] 用法说明：\n- /ollamachat reload\n- /ollamachat toggle <AI名称>\n- /ollamachat prompt <set|delete|list|select|clear> [参数]\n- /ollamachat conversation <new|select|delete|list> [参数]",
-  "usage-aichat": "§e[OllamaChat] 用法说明：\n- /aichat <AI名称> <提示内容>",
+  "usage-ollamachat": "§e[OllamaChat] 用法说明：\n- /ollamachat reload - 重载配置\n- /ollamachat toggle <AI名称> - 开关AI\n- /ollamachat prompt <set|delete|list|select|clear> [参数] - 管理提示词\n- /ollamachat conversation <new|select|delete|list> [参数] - 管理对话\n- /ollamachat suggests <on|off> - 开关推荐回复\n- /ollamachat suggests-presets <on|off> - 开关预设推荐\n- /ollamachat search <子命令> - 管理联网搜索",
+
+  "usage-aichat": "§e[OllamaChat] 用法说明：\n- /aichat <AI名称> <提示内容> - 与AI对话",
+
   "reload-success": "§a[OllamaChat] 配置已成功重新加载！",
+
   "ollama-enabled": "§a[OllamaChat] Ollama 集成功能已启用！",
   "ollama-disabled": "§c[OllamaChat] Ollama 集成功能已停用！",
+
   "toggle-enabled": "§a[OllamaChat] {ai-name} 集成功能已启用！",
   "toggle-disabled": "§c[OllamaChat] {ai-name} 集成功能已停用！",
+
   "invalid-ai-name": "§c[OllamaChat] 无效的 AI 名称！可用 AI 列表：{ai-list}",
+
   "player-only": "§c[OllamaChat] 此命令仅限玩家使用！",
+
   "config-invalid": "§c[OllamaChat] 配置文件无效，已重置为默认设置。",
   "config-load-failed": "§c[OllamaChat] 加载配置失败：{error}",
+
   "response-prefix": "§7[OllamaChat] §f",
   "error-prefix": "§c[OllamaChat] §f",
+
   "generating-status": "§a[OllamaChat] 生成中... ({progress}%)",
   "complete-status": "§a[OllamaChat] 已完成！",
   "error-status": "§c[OllamaChat] 出错！",
+
   "no-permission": "§c[OllamaChat] 您没有权限使用此命令！",
-  "prompt-usage": "§e[OllamaChat] 提示词用法说明：\n- /ollamachat prompt set <名称> <内容>\n- /ollamachat prompt delete <名称>\n- /ollamachat prompt list\n- /ollamachat prompt select <名称>\n- /ollamachat prompt clear",
+
+  "prompt-usage": "§e[OllamaChat] 提示词管理用法：\n- /ollamachat prompt set <名称> <内容> - 设置提示词\n- /ollamachat prompt delete <名称> - 删除提示词\n- /ollamachat prompt list - 列出所有提示词\n- /ollamachat prompt select <名称> - 选择默认提示词\n- /ollamachat prompt clear - 清除默认提示词",
+
   "prompt-set": "§a[OllamaChat] 提示词 '{name}' 已设置成功！",
   "prompt-deleted": "§a[OllamaChat] 提示词 '{name}' 已删除成功！",
   "prompt-not-found": "§c[OllamaChat] 未找到提示词 '{name}'！",
@@ -26,7 +38,9 @@
   "prompt-cleared": "§a[OllamaChat] 默认提示词已清除。",
   "prompt-default": "§a[OllamaChat] 当前默认提示词：'{name}'",
   "prompt-default-invalid": "§c[OllamaChat] 当前默认提示词 '{name}' 无效（未找到）。",
-  "conversation-usage": "§e[OllamaChat] 对话管理用法说明：\n- /ollamachat conversation new <AI名称> <名称>\n- /ollamachat conversation select <AI名称> <ID>\n- /ollamachat conversation delete <AI名称> <ID>\n- /ollamachat conversation list <AI名称>",
+
+  "conversation-usage": "§e[OllamaChat] 对话管理用法：\n- /ollamachat conversation new <AI名称> <名称> - 创建新对话\n- /ollamachat conversation select <AI名称> <名称> - 选择对话\n- /ollamachat conversation delete <AI名称> <名称> - 删除对话\n- /ollamachat conversation list <AI名称> - 列出所有对话",
+
   "conversation-created": "§a[OllamaChat] 已为 {ai-name} 创建对话 '{name}'！",
   "conversation-selected": "§a[OllamaChat] 已为 {ai-name} 选择对话 '{name}'。",
   "conversation-deleted": "§a[OllamaChat] 已为 {ai-name} 删除对话 '{name}'。",
@@ -35,22 +49,70 @@
   "conversation-list-empty": "§a[OllamaChat] {ai-name} 暂无可用对话。",
   "conversation-default": "§a[OllamaChat] {ai-name} 的当前对话：'{name}'",
   "conversation-default-invalid": "§c[OllamaChat] {ai-name} 的当前对话 '{name}' 无效（未找到）。",
+
   "suggested-responses-header": "§a[OllamaChat] 推荐回复：",
   "suggested-response-prefix": "§7[点击回复] §f",
+
   "general-error": "§c[OllamaChat] 发生意外错误：{error}",
   "streaming-interrupted": "§c[OllamaChat] 流式响应已中断。",
   "database-error": "§c[OllamaChat] 数据库错误：{error}",
   "response-truncated": "§e[OllamaChat] 响应因长度限制已被截断。",
-  "json-render-error": "§c[OllamaChat] 未能渲染成功推荐回复: {error}",
-  "suggests-enabled": "§a[OllamaChat] 已为玩家{player}启用推荐回复！",
-  "suggests-disabled": "§c[OllamaChat] 已为玩家{player}禁用推荐回复！",
-  "suggests-rate-limit": "§c[OllamaChat] 请等待{seconds}秒后再生成推荐回复",
-  "suggested-response-hover": "§e点击发送此推荐内容！",
-  "suggests-presets-enabled": "§a[OllamaChat] 已启用预设推荐回复",
-  "suggests-presets-disabled": "§c[OllamaChat] 已启用预设推荐回复",
-  "search-searching": "§e[OllamaChat] 正在搜索网络...",
-  "search-error": "§c网络搜索过程中发生错误",
-  "search-empty-query": "§c[OllamaChat] 搜索查询不能为空！",
-  "search-invalid-format": "§c[OllamaChat] 无效的搜索格式！",
-  "search-complete": "§a[OllamaChat] 网络搜索已完成。"
+  "json-render-error": "§c[OllamaChat] 渲染推荐回复失败: {error}",
 
+  "suggests-enabled": "§a[OllamaChat] 已为玩家 {player} 启用推荐回复！",
+  "suggests-disabled": "§c[OllamaChat] 已为玩家 {player} 禁用推荐回复！",
+  "suggests-rate-limit": "§c[OllamaChat] 请等待 {seconds} 秒后再生成推荐回复",
+  "suggested-response-hover": "§e点击发送此推荐内容！",
+
+  "suggests-presets-enabled": "§a[OllamaChat] 已启用预设推荐回复",
+  "suggests-presets-disabled": "§c[OllamaChat] 已禁用预设推荐回复",
+
+  "websearch-starting": "§7[OllamaChat] §f正在搜索：§e{query}§f...",
+  "websearch-completed": "§7[OllamaChat] §a找到 {count} 条搜索结果，正在生成回答...",
+  "websearch-no-results": "§7[OllamaChat] §c未找到关于“{query}”的搜索结果",
+  "websearch-no-results-short": "§7[OllamaChat] §c未找到搜索结果",
+  "websearch-error": "§c[OllamaChat] 联网搜索失败：{error}",
+  "websearch-results-header": "§7[OllamaChat] §f关于 §e{query} §f的搜索结果：",
+  "websearch-source": "§7来源：{site}",
+  "websearch-url": "§7链接：{url}",
+
+  "search-usage": "§e[OllamaChat] 搜索命令用法：\n- /ollamachat search toggle - 开关联网搜索\n- /ollamachat search status - 查看搜索状态\n- /ollamachat search engine [名称] - 查看/切换搜索引擎\n- /ollamachat search query <内容> - 执行搜索\n- /ollamachat search setkey <引擎> <密钥> - 设置API密钥\n- /ollamachat search setcount <数量> - 设置结果数量(1-50)\n- /ollamachat search addkeyword <关键词> - 添加触发关键词\n- /ollamachat search removekeyword <关键词> - 移除触发关键词\n- /ollamachat search listkeywords - 列出触发关键词",
+
+  "search-query-usage": "§c[OllamaChat] 用法：/ollamachat search query <搜索内容>",
+  "search-setkey-usage-multi": "§c[OllamaChat] 用法：/ollamachat search setkey <引擎> <API密钥>\n可用引擎：bocha, brave",
+  "search-setcount-usage": "§c[OllamaChat] 用法：/ollamachat search setcount <数量>",
+  "search-addkeyword-usage": "§c[OllamaChat] 用法：/ollamachat search addkeyword <关键词>",
+  "search-removekeyword-usage": "§c[OllamaChat] 用法：/ollamachat search removekeyword <关键词>",
+
+  "search-enabled": "§a[OllamaChat] 已启用联网搜索功能！",
+  "search-disabled": "§c[OllamaChat] 已禁用联网搜索功能！",
+
+  "search-status": "§e[OllamaChat] 搜索状态：\n§7启用状态：{status}\n§7当前引擎：{engine}\n§7API密钥：{api-key}\n§7结果数量：{result-count}\n§7自动触发：{auto-trigger}",
+
+  "search-engine-changed": "§a[OllamaChat] 搜索引擎已切换为：{engine}",
+  "search-engine-current": "§e[OllamaChat] 当前搜索引擎：{engine}",
+  "search-engine-available": "§e[OllamaChat] 可用搜索引擎：bocha（博查）、brave",
+
+  "search-api-key-set": "§a[OllamaChat] {engine} API密钥已设置成功！",
+  "search-count-set": "§a[OllamaChat] 搜索结果数量已设置为 {count}",
+  "search-count-invalid": "§c[OllamaChat] 无效的数量！请输入1-50之间的数字。",
+
+  "search-keyword-added": "§a[OllamaChat] 关键词 '{keyword}' 已添加到触发列表！",
+  "search-keyword-removed": "§a[OllamaChat] 关键词 '{keyword}' 已从触发列表移除！",
+  "search-keyword-exists": "§c[OllamaChat] 关键词 '{keyword}' 已存在于触发列表中！",
+  "search-keyword-not-found": "§c[OllamaChat] 触发列表中未找到关键词 '{keyword}'！",
+  "search-keywords-list": "§e[OllamaChat] 触发关键词列表：§e{keywords}",
+  "search-keywords-header": "§e[OllamaChat] 触发关键词列表：",
+  "search-keywords-empty": "§e[OllamaChat] 未配置触发关键词。",
+
+  "search-disabled-error": "§c[OllamaChat] 联网搜索功能当前已禁用。使用 /ollamachat search toggle 启用。",
+  "search-no-api-key": "§c[OllamaChat] {engine} API密钥未配置！使用 /ollamachat search setkey {engine} <密钥> 进行设置。",
+  "search-engine-not-configured": "§c[OllamaChat] 当前选择的搜索引擎 ({engine}) 未正确配置。请检查配置文件。",
+
+  "search-result-format": "§e[{index}] §f{title}\n§7  来源：{site}\n§7  {snippet}\n§7  链接：{url}",
+
+  "brave-country-set": "§a[OllamaChat] Brave国家代码已设置为：{country}",
+  "brave-search-lang-set": "§a[OllamaChat] Brave搜索语言已设置为：{lang}",
+  "brave-ui-lang-set": "§a[OllamaChat] Brave界面语言已设置为：{lang}",
+  "brave-safe-search-set": "§a[OllamaChat] Brave安全搜索级别已设置为：{level}",
+}

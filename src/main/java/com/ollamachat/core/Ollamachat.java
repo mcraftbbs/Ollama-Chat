@@ -1,23 +1,22 @@
 package com.ollamachat.core;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import org.bukkit.plugin.java.JavaPlugin;
-
 import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DatabaseManager;
 import com.ollamachat.DependencyLoader;
 import com.ollamachat.ProgressManager;
+import com.ollamachat.WebSearchService;
 import com.ollamachat.api.OllamaChatAPI;
 import com.ollamachat.api.OllamaChatAPIImpl;
 import com.ollamachat.chat.ChatTriggerHandler;
 import com.ollamachat.chat.SuggestedResponseHandler;
-import com.ollamachat.chat.WebSearchHandler;
 import com.ollamachat.command.AIChatCommand;
 import com.ollamachat.command.OllamaChatCommand;
 import com.ollamachat.command.OllamaChatTabCompleter;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class Ollamachat extends JavaPlugin {
     private ConfigManager configManager;
@@ -25,9 +24,10 @@ public class Ollamachat extends JavaPlugin {
     private ChatHistoryManager chatHistoryManager;
     private ProgressManager progressManager;
     private SuggestedResponseHandler suggestedResponseHandler;
-    private WebSearchHandler webSearchHandler;
+    private WebSearchService webSearchService;
     private Map<UUID, Boolean> playerSuggestionToggles;
     private OllamaChatAPI api;
+    private ChatTriggerHandler chatTriggerHandler;
 
     @Override
     public void onEnable() {
@@ -53,13 +53,10 @@ public class Ollamachat extends JavaPlugin {
         chatHistoryManager = new ChatHistoryManager(databaseManager, maxHistory);
         progressManager = new ProgressManager(this);
         suggestedResponseHandler = new SuggestedResponseHandler(this);
+        webSearchService = new WebSearchService(this);
         playerSuggestionToggles = new HashMap<>();
         api = new OllamaChatAPIImpl(this);
-
-        // Initialize ChatTriggerHandler first, then set WebSearchHandler to avoid circular dependency
-        ChatTriggerHandler chatTriggerHandler = new ChatTriggerHandler(this);
-        webSearchHandler = new WebSearchHandler(this, chatTriggerHandler);
-        chatTriggerHandler.setWebSearchHandler(webSearchHandler);
+        chatTriggerHandler = new ChatTriggerHandler(this);
 
         getServer().getPluginManager().registerEvents(chatTriggerHandler, this);
 
@@ -69,6 +66,15 @@ public class Ollamachat extends JavaPlugin {
         getCommand("aichat").setTabCompleter(new OllamaChatTabCompleter(this));
 
         getLogger().info("OllamaChat API is available for other plugins.");
+        getLogger().info("OllamaChat v" + getDescription().getVersion() + " enabled successfully!");
+
+        if (configManager.isWebSearchEnabled()) {
+            if (configManager.getBochaApiKey() == null || configManager.getBochaApiKey().isEmpty()) {
+                getLogger().warning("Web search is enabled but Bocha API key is not configured!");
+            } else {
+                getLogger().info("Web search feature is enabled with Bocha API");
+            }
+        }
     }
 
     @Override
@@ -81,6 +87,14 @@ public class Ollamachat extends JavaPlugin {
         if (progressManager != null) {
             getServer().getOnlinePlayers().forEach(progressManager::cleanup);
         }
+    }
+
+    public void reloadPlugin() {
+        configManager.reloadConfigValues();
+        configManager.reloadLanguage();
+        if (chatHistoryManager != null) {
+        }
+        getLogger().info("Plugin reloaded successfully!");
     }
 
     public OllamaChatAPI getAPI() {
@@ -107,8 +121,8 @@ public class Ollamachat extends JavaPlugin {
         return suggestedResponseHandler;
     }
 
-    public WebSearchHandler getWebSearchHandler() {
-        return webSearchHandler;
+    public WebSearchService getWebSearchService() {
+        return webSearchService;
     }
 
     public Map<UUID, Boolean> getPlayerSuggestionToggles() {

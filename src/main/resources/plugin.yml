@@ -1,7 +1,7 @@
 name: OllamaChat
 version: '${version}'
 main: com.ollamachat.core.Ollamachat
-api-version: '1.21'
+api-version: '1.20'
 authors: [xwwsdd]
 description: A plugin used to connect Ollama and OtherAI with Minecraft, providing a public API for other plugins.
 website: https://chat.sarskin.cn/invite/iHgI6LTX
@@ -17,42 +17,88 @@ commands:
     permission: ollamachat.use
 
 permissions:
-  ollamachat.reload:
-    description: Allows managing the plugin (reload)
+  ollamachat.*:
+    description: All OllamaChat permissions
     default: op
-  ollamachat.toggle:
-    description: Allows managing the plugin (toggle AI)
-    default: op
+    children:
+      ollamachat.use: true
+      ollamachat.reload: true
+      ollamachat.toggle: true
+      ollamachat.prompt.*: true
+      ollamachat.conversation.*: true
+      ollamachat.suggests.toggle: true
+      ollamachat.suggests-presets.toggle: true
+      ollamachat.search.*: true
+
   ollamachat.use:
-    description: Allows using the /aichat command
+    description: Allows using basic AI chat commands
     default: true
-  ollamachat.prompt.set:
-    description: Allows setting a new prompt
+
+  ollamachat.reload:
+    description: Allows reloading the plugin configuration
     default: op
-  ollamachat.prompt.delete:
-    description: Allows deleting a prompt
+
+  ollamachat.toggle:
+    description: Allows toggling AI models on/off
     default: op
-  ollamachat.prompt.list:
-    description: Allows listing all prompts
+
+  ollamachat.prompt.*:
+    description: All prompt management permissions
     default: op
-  ollamachat.prompt.select:
-    description: Allows selecting or clearing a prompt
-    default: op
-  ollamachat.conversation.new:
-    description: Allows creating a new conversation
+    children:
+      ollamachat.prompt.set: true
+      ollamachat.prompt.delete: true
+      ollamachat.prompt.list: true
+      ollamachat.prompt.select: true
+
+  ollamachat.conversation.*:
+    description: All conversation management permissions
     default: true
-  ollamachat.conversation.select:
-    description: Allows selecting a conversation
-    default: true
-  ollamachat.conversation.list:
-    description: Allows listing conversations
-    default: true
-  ollamachat.conversation.delete:
-    description: Allows deleting a conversation
-    default: true
+    children:
+      ollamachat.conversation.new: true
+      ollamachat.conversation.select: true
+      ollamachat.conversation.delete: true
+      ollamachat.conversation.list: true
+
   ollamachat.suggests.toggle:
-    description: Allows toggling suggested responses on or off
+    description: Allows toggling suggested responses for self
     default: true
+
   ollamachat.suggests-presets.toggle:
-    description: Allows toggling of suggested response presets
+    description: Allows toggling suggested response presets globally
+    default: op
+
+  ollamachat.search.*:
+    description: All web search management permissions
+    default: op
+    children:
+      ollamachat.search.toggle: true
+      ollamachat.search.status: true
+      ollamachat.search.query: true
+      ollamachat.search.setkey: true
+      ollamachat.search.setcount: true
+      ollamachat.search.keywords: true
+
+  ollamachat.search.toggle:
+    description: Allows enabling/disabling web search
+    default: op
+
+  ollamachat.search.status:
+    description: Allows viewing search status
+    default: true
+
+  ollamachat.search.query:
+    description: Allows performing web searches
+    default: true
+
+  ollamachat.search.setkey:
+    description: Allows setting Bocha API key
+    default: op
+
+  ollamachat.search.setcount:
+    description: Allows setting search result count
+    default: op
+
+  ollamachat.search.keywords:
+    description: Allows managing trigger keywords
     default: op

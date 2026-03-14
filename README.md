@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.1.7-blue)
+![Version](https://img.shields.io/badge/version-1.1.8-blue)
 # OllamaChat
 [![Download](https://github.com/gabrielvicenteYT/modrinth-icons/blob/main/Branding/Badge/badge-dark.svg)](https://modrinth.com/plugin/ollama-chat)
 ## Overview
@@ -82,89 +82,276 @@ Type `@bot` or `@ai` followed by your message in Minecraft chat to interact with
 Customize AI interactions via `config.yml`:
 
 ```yaml
-# Ollama API
-ollama-api-url: "http://localhost:11434/api/generate"
-model: "llama3"
+# OllamaChat Configuration File (Version: 1.1.8)
+
+# ============================================================
+# General Settings
+# ============================================================
+
+# Language file to use (en_us, zh_cn, etc.)
+language: en_us
+
+# Enable Ollama integration
 ollama-enabled: true
 
-# Streaming settings
-stream-settings:
-  enabled: true      # Whether to enable streaming for AI responses
+# Ollama API URL
+ollama-api-url: "http://localhost:11434/api/generate"
 
-# Chat
+# Default Ollama model
+model: "llama3"
+
+# Maximum chat history to keep per conversation
+max-history: 5
+
+# Maximum response length (characters)
+max-response-length: 500
+
+# Chat trigger prefixes (messages starting with these will be sent to AI)
 trigger-prefixes:
   - "@bot"
   - "@ai"
 
-# Length
-max-response-length: 500  # Maximum length of AI responses in characters
+# ============================================================
+# Streaming Settings
+# ============================================================
 
-# History
-max-history: 5  # Maximum number of chat history entries to retain per conversation
+stream-settings:
+  # Enable streaming responses
+  enabled: true
 
-# Language Settings
-language: "en_us"  # Language file to use (e.g., en_us.json)
+# ============================================================
+# Prompt Settings
+# ============================================================
 
-# Progress Display Settings
-progress-display:
-  enabled: true               # Whether to enable progress display
-  type: "bossbar"            # Display type (bossbar or actionbar)
-  color: "BLUE"              # BossBar color (BLUE, GREEN, RED, etc.)
-  style: "SOLID"             # BossBar style (SOLID, SEGMENTED_6, etc.)
-  update-interval: 1         # Progress update frequency (in seconds)
+# Default prompt name (empty for no default)
+default-prompt: ""
 
-# Suggested Response
-suggested-responses-enabled: false  # Whether to enable suggested responses
+# Custom prompts
+# You can define custom prompts here that can be selected with /ollamachat prompt select
+# Example:
+# prompts:
+#   expert: "You are an expert assistant. Provide detailed and professional answers."
+#   friendly: "You are a friendly assistant. Keep responses casual and warm."
+prompts: {}
+
+# ============================================================
+# Suggested Responses Settings
+# ============================================================
+
+# AI models to use for generating suggestions
 suggested-response-models:
-  - "llama3"  # AI models used for generating suggested responses
-suggested-response-count: 3  # Number of suggested responses to generate
-suggested-response-prompt: "Conversation:\nUser: {prompt}\nAI: {response}\n\nBased on the above conversation, suggest {count} natural follow-up responses the user might want to say. They should be conversational in tone rather than questions. List them as:\n1. Response 1\n2. Response 2\n3. Response 3"
+  - "llama3"
+
+# Enable suggested responses feature
+suggested-responses-enabled: true
+
+# Number of suggestions to generate
+suggested-response-count: 3
+
+# Cooldown between suggestion generations (seconds, 0 to disable)
+suggested-response-cooldown: 10
+
+# Enable preset suggestions (used when AI is unavailable or as fallback)
+suggested-response-presets-enabled: true
+
+# Preset suggestions (used when AI is unavailable)
 suggested-response-presets:
   - "I see what you mean."
   - "That's interesting!"
   - "Tell me more about that."
-suggested-response-model-toggles:
-  llama3: true  # Toggle for each model in suggested-response-models
-suggested-response-cooldown: 10  # Cooldown between suggested responses (in seconds)
-suggested-response-presets-enabled: false  # Whether to enable preset suggested responses
 
-# Database
-database:
-  type: sqlite  # Database type (sqlite or mysql)
-  mysql:
-    host: localhost
-    port: 3306
-    database: ollamachat
-    username: root
-    password: ""
-    hikari:  # HikariCP connection pool settings for MySQL
-      maximum-pool-size: 10  # Maximum number of connections in the pool
-      minimum-idle: 2        # Minimum number of idle connections
-      connection-timeout: 30000  # Connection timeout in milliseconds
-      idle-timeout: 600000   # Idle connection timeout in milliseconds
-      max-lifetime: 1800000  # Maximum lifetime of a connection in milliseconds
-      cache-prep-stmts: true  # Cache prepared statements
-      prep-stmt-cache-size: 250  # Prepared statement cache size
-      prep-stmt-cache-sql-limit: 2048  # SQL limit for prepared statement cache
-
-# Default prompt to prepend to user inputs (empty for none)
-default-prompt: ""
-
-# Custom prompts
-prompts:
+# Individual model toggles for suggestions
+# You can enable/disable specific models for suggestion generation
 # Example:
-# friendly: "You are a friendly assistant who responds in a cheerful tone."
-# formal: "You are a professional assistant who responds formally."
+# suggested-response-model-toggles:
+#   llama3: true
+#   gpt-3.5-turbo: false
+suggested-response-model-toggles: {}
 
-# Other AI Configurations
-other-ai-configs:
-  openai:
-    api-url: "https://api.openai.com/v1/chat/completions"
-    api-key: "your-openai-api-key"
-    model: "gpt-4"
-    enabled: false
-    messages-format: true
+# ============================================================
+# Web Search Settings
+# ============================================================
 
+web-search:
+  # Enable web search feature
+  enabled: false
+
+  # Auto-trigger search when message contains trigger keywords
+  auto-trigger: true
+
+  # Keywords that trigger automatic web search
+  # When a user's message contains any of these words, a web search will be performed
+  trigger-keywords:
+    - "search"
+    - "find"
+    - "look up"
+    - "google"
+    - "what is"
+    - "who is"
+    - "when did"
+    - "where is"
+
+  # Number of search results to return (1-50)
+  result-count: 5
+
+  # ============================================================
+  # Search Engine Configuration
+  # ============================================================
+  # Choose which search engine to use: bocha or brave
+  # - bocha: Chinese-focused search engine (requires API key)
+  # - brave: International search engine (requires API key)
+  engine: "brave"
+
+  # ---------- Bocha Search Engine (Chinese-focused) ----------
+  # Website: https://www.bochaai.com/
+  # API Documentation: https://api.bocha.cn/v1/web-search
+  bocha:
+    # Bocha API Key (required for Bocha engine)
+    # Get it from: https://www.bochaai.com/ (Chinese website)
+    api-key: ""
+
+    # Include specific sites (only search within these domains)
+    # Example: ["example.com", "sample.org"]
+    include-sites: false
+    include-sites-list: []
+
+    # Exclude specific sites (exclude these domains from search)
+    # Example: ["spam.com", "adsite.net"]
+    exclude-sites: false
+    exclude-sites-list: []
+
+    # Time range in days (0 for unlimited)
+    # Restrict search results to content published within this many days
+    time-range: 0
+
+    # Freshness: Day, Week, Month, Quarter, Year (empty for unlimited)
+    # Restrict search results by how recent they are
+    freshness: ""
+
+  # ---------- Brave Search Engine (International) ----------
+  # Website: https://brave.com/search/api/
+  # API Documentation: https://api.search.brave.com/app/documentation
+  brave:
+    # Brave API Key (required for Brave engine)
+    # Get it from: https://api.search.brave.com/app/keys
+    api-key: ""
+
+    # Country code (e.g., US, CN, GB, DE, FR, JP, etc.)
+    # This affects search result relevance based on location
+    country: "US"
+
+    # Search language (e.g., en, zh, es, fr, de, etc.)
+    # Results will be prioritized in this language
+    search-lang: "en"
+
+    # UI language (e.g., en, zh, es, fr, de, etc.)
+    # Language for UI elements in search results
+    ui-lang: "en"
+
+    # Safe search level (off, moderate, strict)
+    # Filters adult content based on strictness
+    safe-search: "moderate"
+
+  # ---------- Search Prompt Template ----------
+  # Template for formatting search results for AI
+  # Available placeholders:
+  #   {search_results} - The formatted search results
+  #   {prompt} - The user's original question
+  prompt-template: "Based on the following search results, please answer the user's question:\n\n{search_results}\n\nUser question: {prompt}\n\nPlease provide an accurate and detailed answer based on the search results. If the search results are insufficient, please indicate that."
+
+# ============================================================
+# Database Settings
+# ============================================================
+
+database:
+  # Database type: sqlite or mysql
+  # - sqlite: Local file-based database (simpler, no setup required)
+  # - mysql: Remote MySQL database (better for multiple servers)
+  type: sqlite
+
+  # MySQL settings (only used when type is mysql)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "ollamachat"
+    username: "root"
+    password: ""
+
+    # HikariCP connection pool settings
+    # These control how the database connection pool behaves
+    hikari:
+      # Maximum number of connections in the pool
+      maximum-pool-size: 10
+      # Minimum number of idle connections to maintain
+      minimum-idle: 2
+      # Maximum time (in ms) to wait for a connection from the pool
+      connection-timeout: 30000
+      # Maximum time (in ms) a connection can stay idle in the pool
+      idle-timeout: 600000
+      # Maximum lifetime (in ms) of a connection in the pool
+      max-lifetime: 1800000
+      # Cache prepared statements for better performance
+      cache-prep-stmts: true
+      # Size of the prepared statement cache
+      prep-stmt-cache-size: 250
+      # Maximum SQL length for cached prepared statements
+      prep-stmt-cache-sql-limit: 2048
+
+# ============================================================
+# Progress Display Settings
+# ============================================================
+
+progress-display:
+  # Enable progress display while AI is generating responses
+  enabled: true
+
+  # Display type: bossbar or actionbar
+  # - bossbar: Uses Minecraft's boss bar (more visible)
+  # - actionbar: Uses the action bar above hotbar (less intrusive)
+  type: "bossbar"
+
+  # BossBar color (BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW)
+  # Only applicable when type is "bossbar"
+  color: "BLUE"
+
+  # BossBar style (SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20)
+  # Only applicable when type is "bossbar"
+  style: "SOLID"
+
+  # Update interval in ticks (20 ticks = 1 second)
+  # How often the progress display updates
+  update-interval: 1
+
+# ============================================================
+# Other AI Integrations
+# ============================================================
+
+# Configure other AI models (OpenAI, Claude, etc.)
+# You can add multiple AI providers here and use them with /aichat command
+other-ai-configs: {}
+  # Example OpenAI configuration:
+  # openai:
+  #   api-url: "https://api.openai.com/v1/chat/completions"
+  #   api-key: "your-api-key-here"
+  #   model: "gpt-3.5-turbo"
+  #   enabled: true
+  #   messages-format: true
+  #
+  # Example Claude configuration:
+  # claude:
+  #   api-url: "https://api.anthropic.com/v1/messages"
+  #   api-key: "your-api-key-here"
+  #   model: "claude-3-opus-20240229"
+  #   enabled: true
+  #   messages-format: true
+  #
+  # Example Custom API configuration:
+  # custom-ai:
+  #   api-url: "https://your-custom-api.com/generate"
+  #   api-key: "your-api-key"
+  #   model: "your-model-name"
+#   enabled: true
+#   messages-format: false
 ```
 
 
@@ -172,13 +359,18 @@ other-ai-configs:
 
 We welcome contributions! Submit issues or pull requests on our [GitHub repository](https://github.com/mcraftbbs/Ollama-Chat).
 
+## Contributors
+<a href="https://github.com/mcraftbbs/Ollama-Chat/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mcraftbbs/Ollama-Chat" />
+</a>
+
 ## License
 
 Licensed under the MIT License. See [LICENSE](https://github.com/mcraftbbs/Ollama-Chat?tab=MIT-1-ov-file).
 
 ## Support
 
-For help, visit our [GitHub repository](https://github.com/mcraftbbs/Ollama-Chat), join our [community server](https://chat.sarskin.cn/invite/iHgI6LTX), or connect on [Discord](https://discord.gg/rgjSkRU9).
+For help, visit our [GitHub repository](https://github.com/mcraftbbs/Ollama-Chat), join our [Community server](https://chat.sarskin.cn/invite/iHgI6LTX), or connect on [Discord](https://discord.gg/rgjSkRU9).
 
 
 **Note**: **Ollama-Chat** is actively developed, with new features and improvements being added regularly. Stay tuned for updates!
