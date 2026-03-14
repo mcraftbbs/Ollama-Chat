@@ -30,38 +30,56 @@ Type `@bot` or `@ai` followed by your message in Minecraft chat to interact with
 
 ### Commands
 
-- **/ollamachat reload**: Reloads plugin configuration and language files (`ollamachat.reload`).
-- **/ollamachat toggle <ai-name>**: Enables/disables specified AI service (`ollamachat.toggle`).
-- **/aichat <ai-name> <prompt>**: Interacts with other AI services (`ollamachat.use`).
-- **/ollamachat prompt set <promptName> <promptContent>**: Creates a new prompt (`ollamachat.prompt.set`).
-- **/ollamachat prompt delete <promptName>**: Deletes a prompt (`ollamachat.prompt.delete`).
-- **/ollamachat prompt list**: Lists all prompts (`ollamachat.prompt.list`).
-- **/ollamachat prompt select <promptName>**: Sets default prompt (`ollamachat.prompt.select`).
-- **/ollamachat prompt clear**: Resets default prompt (`ollamachat.prompt.select`).
-- **/ollamachat conversation new <aiName> <convName>**: Starts a new conversation (`ollamachat.conversation.new`).
-- **/ollamachat conversation select <aiName> <convName>**: Switches conversations (`ollamachat.conversation.select`).
-- **/ollamachat conversation delete <aiName> <convName>**: Deletes a conversation (`ollamachat.conversation.delete`).
-- **/ollamachat conversation list <aiName>**: Lists conversations for an AI (`ollamachat.conversation.list`).
-- **/ollamachat suggests toggle**: Toggles suggested responses (`ollamachat.suggests.toggle`).
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/ollamachat reload` | `ollamachat.reload` | Reloads plugin configuration and language files. |
+| `/ollamachat toggle <ai-name>` | `ollamachat.toggle` | Enables/disables specified AI service. |
+| `/aichat <ai-name> <prompt>` | `ollamachat.use` | Interacts with other AI services. |
+| `/ollamachat prompt set <promptName> <promptContent>` | `ollamachat.prompt.set` | Creates a new prompt. |
+| `/ollamachat prompt delete <promptName>` | `ollamachat.prompt.delete` | Deletes a prompt. |
+| `/ollamachat prompt list` | `ollamachat.prompt.list` | Lists all prompts. |
+| `/ollamachat prompt select <promptName>` | `ollamachat.prompt.select` | Sets default prompt. |
+| `/ollamachat prompt clear` | `ollamachat.prompt.select` | Resets default prompt. |
+| `/ollamachat conversation new <aiName> <convName>` | `ollamachat.conversation.new` | Starts a new conversation. |
+| `/ollamachat conversation select <aiName> <convName>` | `ollamachat.conversation.select` | Switches conversations. |
+| `/ollamachat conversation delete <aiName> <convName>` | `ollamachat.conversation.delete` | Deletes a conversation. |
+| `/ollamachat conversation list <aiName>` | `ollamachat.conversation.list` | Lists conversations for an AI. |
+| `/ollamachat suggests toggle` | `ollamachat.suggests.toggle` | Toggles suggested responses. |
+| `/ollamachat suggests-presets toggle` | `ollamachat.suggests-presets.toggle` | Toggles preset suggested responses. |
+| `/ollamachat search toggle` | `ollamachat.search.toggle` | Enables/disables web search functionality. |
+| `/ollamachat search status` | `ollamachat.search.status` | Displays current search configuration. |
+| `/ollamachat search query <text>` | `ollamachat.search.query` | Performs a manual web search and gets AI response. |
+| `/ollamachat search engine [name]` | `ollamachat.search.engine` | Shows or changes the active search engine. |
+| `/ollamachat search setkey <engine> <key>` | `ollamachat.search.setkey` | Sets API key for specified search engine. |
+| `/ollamachat search setcount <number>` | `ollamachat.search.setcount` | Configures number of search results (1-50). |
+| `/ollamachat search addkeyword <word>` | `ollamachat.search.keywords` | Adds a trigger keyword for auto-search. |
+| `/ollamachat search removekeyword <word>` | `ollamachat.search.keywords` | Removes a trigger keyword. |
+| `/ollamachat search listkeywords` | `ollamachat.search.keywords` | Lists all configured trigger keywords. |
 
 ### Permissions
 
-| Command | Permission | Description |
-|---------|------------|-------------|
-| `/ollamachat reload` | `ollamachat.reload` | Reloads plugin configuration. |
-| `/ollamachat toggle <aiName>` | `ollamachat.toggle` | Toggles specified AI service. |
-| `/aichat <aiName> <message>` | `ollamachat.use` | Sends a message to specified AI. |
-| `/ollamachat prompt set <promptName> <promptContent>` | `ollamachat.prompt.set` | Creates and saves a new prompt. |
-| `/ollamachat prompt delete <promptName>` | `ollamachat.prompt.delete` | Deletes a specified prompt. |
-| `/ollamachat prompt list` | `ollamachat.prompt.list` | Lists all prompts and current default. |
-| `/ollamachat prompt select <promptName>` | `ollamachat.prompt.select` | Sets a prompt as default. |
-| `/ollamachat prompt clear` | `ollamachat.prompt.select` | Resets default prompt. |
-| `/ollamachat conversation new <aiName> <convName>` | `ollamachat.conversation.new` | Starts a new conversation. |
-| `/ollamachat conversation select <aiName> <convName>` | `ollamachat.conversation.select` | Switches to an existing conversation. |
-| `/ollamachat conversation delete <aiName> <convName>` | `ollamachat.conversation.delete` | Deletes a conversation. |
-| `/ollamachat conversation list <aiName>` | `ollamachat.conversation.list` | Lists all conversations for an AI. |
-| `/ollamachat suggests toggle` | `ollamachat.suggests.toggle` | Toggles suggested responses. |
-| `/ollamachat suggests-presets toggle` | `ollamachat.suggests-presets.toggle` | Toggles preset suggested responses. |
+| Permission | Description |
+|------------|-------------|
+| `ollamachat.reload` | Allows reloading plugin configuration and language files. |
+| `ollamachat.toggle` | Allows enabling/disabling AI services. |
+| `ollamachat.use` | Allows sending messages to AI services. |
+| `ollamachat.prompt.set` | Allows creating and saving new prompts. |
+| `ollamachat.prompt.delete` | Allows deleting prompts. |
+| `ollamachat.prompt.list` | Allows listing all prompts. |
+| `ollamachat.prompt.select` | Allows selecting or clearing default prompt. |
+| `ollamachat.conversation.new` | Allows starting new conversations. |
+| `ollamachat.conversation.select` | Allows switching between conversations. |
+| `ollamachat.conversation.delete` | Allows deleting conversations. |
+| `ollamachat.conversation.list` | Allows listing conversations for an AI. |
+| `ollamachat.suggests.toggle` | Allows toggling suggested responses. |
+| `ollamachat.suggests-presets.toggle` | Allows toggling preset suggested responses. |
+| `ollamachat.search.toggle` | Allows enabling/disabling web search. |
+| `ollamachat.search.status` | Allows viewing search configuration. |
+| `ollamachat.search.query` | Allows performing manual web searches. |
+| `ollamachat.search.engine` | Allows changing the search engine. |
+| `ollamachat.search.setkey` | Allows setting API keys for search engines. |
+| `ollamachat.search.setcount` | Allows configuring search result count. |
+| `ollamachat.search.keywords` | Allows managing trigger keywords. |
 
 **Example:**
 ```
