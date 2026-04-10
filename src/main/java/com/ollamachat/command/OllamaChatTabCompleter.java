@@ -28,7 +28,12 @@ public class OllamaChatTabCompleter implements TabCompleter {
 
         if (command.getName().equalsIgnoreCase("ollamachat")) {
             if (args.length == 1) {
+                // Top-level command completion
                 List<String> subCommands = new ArrayList<>();
+
+                // Add help command - available to everyone
+                subCommands.add("help");
+
                 if (sender.hasPermission("ollamachat.reload")) {
                     subCommands.add("reload");
                 }
@@ -65,7 +70,20 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 }
                 return filterCompletions(subCommands, args[0]);
             }
+            else if (args.length == 2 && args[0].equalsIgnoreCase("help")) {
+                // Help command subcommand completion
+                List<String> helpTopics = new ArrayList<>();
+                helpTopics.add("reload");
+                helpTopics.add("toggle");
+                helpTopics.add("prompt");
+                helpTopics.add("conversation");
+                helpTopics.add("suggests");
+                helpTopics.add("suggests-presets");
+                helpTopics.add("search");
+                return filterCompletions(helpTopics, args[1]);
+            }
             else if (args.length == 2 && args[0].equalsIgnoreCase("toggle") && sender.hasPermission("ollamachat.toggle")) {
+                // Toggle command - AI name completion
                 List<String> aiNames = new ArrayList<>();
                 aiNames.add("ollama");
                 aiNames.addAll(configManager.getOtherAIConfigs().keySet());
@@ -76,6 +94,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
                             sender.hasPermission("ollamachat.prompt.delete") ||
                             sender.hasPermission("ollamachat.prompt.list") ||
                             sender.hasPermission("ollamachat.prompt.select"))) {
+                // Prompt command subcommand completion
                 List<String> promptSubCommands = new ArrayList<>();
                 if (sender.hasPermission("ollamachat.prompt.set")) {
                     promptSubCommands.add("set");
@@ -95,6 +114,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
             else if (args.length == 3 && args[0].equalsIgnoreCase("prompt") && (
                     args[1].equalsIgnoreCase("delete") || args[1].equalsIgnoreCase("select")) &&
                     (sender.hasPermission("ollamachat.prompt.delete") || sender.hasPermission("ollamachat.prompt.select"))) {
+                // Prompt name completion for delete/select
                 return filterCompletions(new ArrayList<>(configManager.getPrompts().keySet()), args[2]);
             }
             else if (args.length == 2 && args[0].equalsIgnoreCase("conversation") && sender instanceof Player &&
@@ -102,6 +122,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
                             sender.hasPermission("ollamachat.conversation.select") ||
                             sender.hasPermission("ollamachat.conversation.delete") ||
                             sender.hasPermission("ollamachat.conversation.list"))) {
+                // Conversation command subcommand completion
                 List<String> convSubCommands = new ArrayList<>();
                 if (sender.hasPermission("ollamachat.conversation.new")) {
                     convSubCommands.add("new");
@@ -118,6 +139,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 return filterCompletions(convSubCommands, args[1]);
             }
             else if (args.length == 3 && args[0].equalsIgnoreCase("conversation") && sender instanceof Player) {
+                // AI name completion for conversation commands
                 List<String> aiNames = new ArrayList<>();
                 aiNames.add("ollama");
                 aiNames.addAll(configManager.getOtherAIConfigs().keySet());
@@ -126,12 +148,14 @@ public class OllamaChatTabCompleter implements TabCompleter {
             else if (args.length == 4 && args[0].equalsIgnoreCase("conversation") &&
                     (args[1].equalsIgnoreCase("select") || args[1].equalsIgnoreCase("delete")) && sender instanceof Player &&
                     (sender.hasPermission("ollamachat.conversation.select") || sender.hasPermission("ollamachat.conversation.delete"))) {
+                // Conversation name completion for select/delete
                 String aiName = args[2];
                 Map<String, String> conversations = plugin.getChatHistoryManager().listConversations(((Player) sender).getUniqueId(), aiName);
                 return filterCompletions(new ArrayList<>(conversations.values()), args[3]);
             }
             else if (args.length == 2 && (args[0].equalsIgnoreCase("suggests") || args[0].equalsIgnoreCase("suggests-presets")) && sender instanceof Player &&
                     (sender.hasPermission("ollamachat.suggests.toggle") || sender.hasPermission("ollamachat.suggests-presets.toggle"))) {
+                // Suggests toggle completion
                 return filterCompletions(Arrays.asList("on", "off"), args[1]);
             }
             else if (args.length == 2 && args[0].equalsIgnoreCase("search") &&
@@ -142,7 +166,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
                             sender.hasPermission("ollamachat.search.setkey") ||
                             sender.hasPermission("ollamachat.search.setcount") ||
                             sender.hasPermission("ollamachat.search.keywords"))) {
-
+                // Search command subcommand completion
                 List<String> searchSubCommands = new ArrayList<>();
 
                 if (sender.hasPermission("ollamachat.search.toggle")) {
@@ -172,11 +196,14 @@ public class OllamaChatTabCompleter implements TabCompleter {
                 return filterCompletions(searchSubCommands, args[1]);
             }
             else if (args.length == 3 && args[0].equalsIgnoreCase("search")) {
+                // Search command parameter completion based on subcommand
                 String subCommand = args[1].toLowerCase();
 
+                // Engine selection completion
                 if (subCommand.equals("engine") && sender.hasPermission("ollamachat.search.engine")) {
                     return filterCompletions(Arrays.asList("bocha", "brave"), args[2]);
                 }
+                // Setkey engine selection completion
                 else if (subCommand.equals("setkey") && sender.hasPermission("ollamachat.search.setkey")) {
                     if (args[2].isEmpty()) {
                         return Arrays.asList("bocha", "brave");
@@ -184,18 +211,22 @@ public class OllamaChatTabCompleter implements TabCompleter {
                         return filterCompletions(Arrays.asList("bocha", "brave"), args[2]);
                     }
                 }
+                // Setcount value completion
                 else if (subCommand.equals("setcount") && sender.hasPermission("ollamachat.search.setcount")) {
                     return filterCompletions(Arrays.asList("5", "10", "15", "20", "25", "30"), args[2]);
                 }
+                // Addkeyword placeholder
                 else if (subCommand.equals("addkeyword") && sender.hasPermission("ollamachat.search.keywords")) {
                     return Arrays.asList("<keyword>");
                 }
+                // Removekeyword - show existing keywords
                 else if (subCommand.equals("removekeyword") && sender.hasPermission("ollamachat.search.keywords")) {
                     return filterCompletions(configManager.getWebSearchTriggerKeywords(), args[2]);
                 }
             }
             else if (args.length == 4 && args[0].equalsIgnoreCase("search") && args[1].equalsIgnoreCase("setkey") &&
                     sender.hasPermission("ollamachat.search.setkey")) {
+                // API key placeholder based on selected engine
                 String engine = args[2].toLowerCase();
                 if (engine.equals("bocha")) {
                     return Arrays.asList("<bocha-api-key>");
@@ -205,6 +236,7 @@ public class OllamaChatTabCompleter implements TabCompleter {
             }
         }
         else if (command.getName().equalsIgnoreCase("aichat") && sender.hasPermission("ollamachat.use")) {
+            // AIChat command - AI name completion
             if (args.length == 1) {
                 List<String> aiNames = new ArrayList<>();
                 aiNames.add("ollama");
@@ -216,7 +248,17 @@ public class OllamaChatTabCompleter implements TabCompleter {
         return completions;
     }
 
+    /**
+     * Filters a list of options based on user input (case-insensitive prefix match)
+     *
+     * @param options List of possible completion options
+     * @param input User's current input
+     * @return Filtered list of matching options
+     */
     private List<String> filterCompletions(List<String> options, String input) {
+        if (input == null || input.isEmpty()) {
+            return options;
+        }
         return options.stream()
                 .filter(option -> option.toLowerCase().startsWith(input.toLowerCase()))
                 .collect(Collectors.toList());

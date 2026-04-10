@@ -1,7 +1,33 @@
 {
-  "usage-ollamachat": "§e[OllamaChat] 用法说明：\n- /ollamachat reload - 重载配置\n- /ollamachat toggle <AI名称> - 开关AI\n- /ollamachat prompt <set|delete|list|select|clear> [参数] - 管理提示词\n- /ollamachat conversation <new|select|delete|list> [参数] - 管理对话\n- /ollamachat suggests <on|off> - 开关推荐回复\n- /ollamachat suggests-presets <on|off> - 开关预设推荐\n- /ollamachat search <子命令> - 管理联网搜索",
+  "usage-ollamachat": "§6=== OllamaChat 命令列表 ===\n§e/ollamachat help §7- 查看命令帮助\n§e/ollamachat reload §7- 重载配置文件\n§e/ollamachat toggle <AI名称> §7- 启用/禁用 AI 集成\n§e/ollamachat prompt <set|delete|list|select|clear> §7- 管理提示词\n§e/ollamachat conversation <new|select|delete|list> §7- 管理对话\n§e/ollamachat suggests <on|off> §7- 切换候选回复\n§e/ollamachat suggests-presets <on|off> §7- 切换预设推荐\n§e/ollamachat search <子命令> §7- 联网搜索管理\n§7输入 §e/ollamachat help <命令> §7查看详细帮助",
+
+  "usage-ollamachat-short": "§e[OllamaChat] §7使用 §e/ollamachat help §7查看命令列表",
 
   "usage-aichat": "§e[OllamaChat] 用法说明：\n- /aichat <AI名称> <提示内容> - 与AI对话",
+
+  "help-reload": "§6=== /ollamachat reload ===\n§7重载所有插件配置，包括 config.yml 和语言文件。\n§7别名：无\n§7权限：ollamachat.reload\n§7示例：§e/ollamachat reload",
+
+  "help-toggle": "§6=== /ollamachat toggle ===\n§7启用或禁用指定的 AI 集成。\n§7用法：§e/ollamachat toggle <AI名称>\n§7可用 AI：ollama，以及 other-ai-configs 中配置的 AI\n§7权限：ollamachat.toggle\n§7示例：§e/ollamachat toggle ollama",
+
+  "help-prompt": "§6=== /ollamachat prompt ===\n§7管理 AI 对话的自定义提示词。\n§e子命令：\n§e  set <名称> <内容> §7- 创建/更新提示词\n§e  delete <名称> §7- 删除提示词\n§e  list §7- 列出所有提示词\n§e  select <名称> §7- 设置默认提示词\n§e  clear §7- 清除默认提示词\n§7权限：ollamachat.prompt.*\n§7示例：§e/ollamachat prompt set helpful \"你是一个乐于助人的助手\"",
+
+  "help-conversation": "§6=== /ollamachat conversation ===\n§7管理 AI 对话历史。\n§e子命令：\n§e  new <AI名称> <名称> §7- 创建新对话\n§e  select <AI名称> <名称> §7- 切换对话\n§e  delete <AI名称> <名称> §7- 删除对话\n§e  list <AI名称> §7- 列出所有对话\n§7权限：ollamachat.conversation.*\n§7示例：§e/ollamachat conversation new ollama 对话交流",
+
+  "help-suggests": "§6=== /ollamachat suggests ===\n§7为自己切换候选回复功能。\n§7用法：§e/ollamachat suggests <on|off>\n§7权限：ollamachat.suggests.toggle\n§7示例：§e/ollamachat suggests on",
+
+  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7全局启用或禁用预设候选回复。\n§7用法：§e/ollamachat suggests-presets <on|off>\n§7权限：ollamachat.suggests-presets.toggle\n§7示例：§e/ollamachat suggests-presets off",
+
+  "help-search": "§6=== /ollamachat search ===\n§7管理联网搜索功能。\n§e子命令：\n§e  toggle §7- 启用/禁用联网搜索\n§e  status §7- 显示当前搜索状态\n§e  engine <bocha|brave> §7- 切换搜索引擎\n§e  query <文本> §7- 执行联网搜索\n§e  setkey <引擎> <密钥> §7- 设置引擎 API 密钥\n§e  setcount <数量> §7- 设置结果数量(1-50)\n§e  addkeyword <关键词> §7- 添加触发关键词\n§e  removekeyword <关键词> §7- 移除触发关键词\n§e  listkeywords §7- 列出所有触发关键词\n§7权限：ollamachat.search.*\n§7示例：§e/ollamachat search query Minecraft 1.21 新特性",
+
+  "help-search-engine": "§6=== /ollamachat search engine ===\n§7切换活跃的搜索引擎。\n§7可用引擎：§eBOCHA §7(需要 API 密钥)，§eBRAVE §7(需要 API 密钥)\n§7用法：§e/ollamachat search engine <bocha|brave>\n§7示例：§e/ollamachat search engine brave",
+
+  "help-search-setkey": "§6=== /ollamachat search setkey ===\n§7为搜索引擎设置 API 密钥。\n§7用法：§e/ollamachat search setkey <引擎> <API密钥>\n§7支持的引擎：bocha, brave\n§7获取 API 密钥：\n§7  Bocha：https://www.bochaai.com/\n§7  Brave：https://api.search.brave.com/app/keys\n§7示例：§e/ollamachat search setkey brave 你的API密钥",
+
+  "help-search-query": "§6=== /ollamachat search query ===\n§7执行联网搜索并显示结果。\n§7用法：§e/ollamachat search query <搜索内容>\n§7注意：结果直接显示，不会发送给 AI\n§7示例：§e/ollamachat search query 最新 Minecraft 更新",
+
+  "no-help-available": "§c[OllamaChat] 没有关于命令的帮助：{command}",
+
+  "invalid-command": "§c[OllamaChat] 无效的命令。输入 §e/ollamachat help §c查看用法。",
 
   "reload-success": "§a[OllamaChat] 配置已成功重新加载！",
 
@@ -50,22 +76,22 @@
   "conversation-default": "§a[OllamaChat] {ai-name} 的当前对话：'{name}'",
   "conversation-default-invalid": "§c[OllamaChat] {ai-name} 的当前对话 '{name}' 无效（未找到）。",
 
-  "suggested-responses-header": "§a[OllamaChat] 推荐回复：",
+  "suggested-responses-header": "§a[OllamaChat] 候选回复：",
   "suggested-response-prefix": "§7[点击回复] §f",
 
   "general-error": "§c[OllamaChat] 发生意外错误：{error}",
   "streaming-interrupted": "§c[OllamaChat] 流式响应已中断。",
   "database-error": "§c[OllamaChat] 数据库错误：{error}",
   "response-truncated": "§e[OllamaChat] 响应因长度限制已被截断。",
-  "json-render-error": "§c[OllamaChat] 渲染推荐回复失败: {error}",
+  "json-render-error": "§c[OllamaChat] 渲染候选回复失败: {error}",
 
-  "suggests-enabled": "§a[OllamaChat] 已为玩家 {player} 启用推荐回复！",
-  "suggests-disabled": "§c[OllamaChat] 已为玩家 {player} 禁用推荐回复！",
-  "suggests-rate-limit": "§c[OllamaChat] 请等待 {seconds} 秒后再生成推荐回复",
+  "suggests-enabled": "§a[OllamaChat] 已为玩家 {player} 启用候选回复！",
+  "suggests-disabled": "§c[OllamaChat] 已为玩家 {player} 禁用候选回复！",
+  "suggests-rate-limit": "§c[OllamaChat] 请等待 {seconds} 秒后再生成候选回复",
   "suggested-response-hover": "§e点击发送此推荐内容！",
 
-  "suggests-presets-enabled": "§a[OllamaChat] 已启用预设推荐回复",
-  "suggests-presets-disabled": "§c[OllamaChat] 已禁用预设推荐回复",
+  "suggests-presets-enabled": "§a[OllamaChat] 已启用预设候选回复",
+  "suggests-presets-disabled": "§c[OllamaChat] 已禁用预设候选回复",
 
   "websearch-starting": "§7[OllamaChat] §f正在搜索：§e{query}§f...",
   "websearch-completed": "§7[OllamaChat] §a找到 {count} 条搜索结果，正在生成回答...",
@@ -79,6 +105,7 @@
   "search-usage": "§e[OllamaChat] 搜索命令用法：\n- /ollamachat search toggle - 开关联网搜索\n- /ollamachat search status - 查看搜索状态\n- /ollamachat search engine [名称] - 查看/切换搜索引擎\n- /ollamachat search query <内容> - 执行搜索\n- /ollamachat search setkey <引擎> <密钥> - 设置API密钥\n- /ollamachat search setcount <数量> - 设置结果数量(1-50)\n- /ollamachat search addkeyword <关键词> - 添加触发关键词\n- /ollamachat search removekeyword <关键词> - 移除触发关键词\n- /ollamachat search listkeywords - 列出触发关键词",
 
   "search-query-usage": "§c[OllamaChat] 用法：/ollamachat search query <搜索内容>",
+  "search-setkey-usage": "§c[OllamaChat] 用法：/ollamachat search setkey <引擎> <API密钥>",
   "search-setkey-usage-multi": "§c[OllamaChat] 用法：/ollamachat search setkey <引擎> <API密钥>\n可用引擎：bocha, brave",
   "search-setcount-usage": "§c[OllamaChat] 用法：/ollamachat search setcount <数量>",
   "search-addkeyword-usage": "§c[OllamaChat] 用法：/ollamachat search addkeyword <关键词>",
@@ -92,8 +119,12 @@
   "search-engine-changed": "§a[OllamaChat] 搜索引擎已切换为：{engine}",
   "search-engine-current": "§e[OllamaChat] 当前搜索引擎：{engine}",
   "search-engine-available": "§e[OllamaChat] 可用搜索引擎：bocha（博查）、brave",
+  "search-engine-not-configured": "§c[OllamaChat] 当前选择的搜索引擎 ({engine}) 未正确配置。请检查配置文件。",
+  "search-engine-missing-api-key": "§c[OllamaChat] {engine} 的 API 密钥缺失。请使用 /ollamachat search setkey {engine} <密钥> 进行设置。",
 
   "search-api-key-set": "§a[OllamaChat] {engine} API密钥已设置成功！",
+  "search-setkey-bocha": "§a[OllamaChat] 博查 API 密钥已设置成功！",
+  "search-setkey-brave": "§a[OllamaChat] Brave API 密钥已设置成功！",
   "search-count-set": "§a[OllamaChat] 搜索结果数量已设置为 {count}",
   "search-count-invalid": "§c[OllamaChat] 无效的数量！请输入1-50之间的数字。",
 
@@ -107,12 +138,18 @@
 
   "search-disabled-error": "§c[OllamaChat] 联网搜索功能当前已禁用。使用 /ollamachat search toggle 启用。",
   "search-no-api-key": "§c[OllamaChat] {engine} API密钥未配置！使用 /ollamachat search setkey {engine} <密钥> 进行设置。",
-  "search-engine-not-configured": "§c[OllamaChat] 当前选择的搜索引擎 ({engine}) 未正确配置。请检查配置文件。",
 
   "search-result-format": "§e[{index}] §f{title}\n§7  来源：{site}\n§7  {snippet}\n§7  链接：{url}",
 
+  "brave-api-key-set": "§a[OllamaChat] Brave API密钥已设置成功！",
   "brave-country-set": "§a[OllamaChat] Brave国家代码已设置为：{country}",
   "brave-search-lang-set": "§a[OllamaChat] Brave搜索语言已设置为：{lang}",
   "brave-ui-lang-set": "§a[OllamaChat] Brave界面语言已设置为：{lang}",
   "brave-safe-search-set": "§a[OllamaChat] Brave安全搜索级别已设置为：{level}",
+
+  "bocha-api-key-set": "§a[OllamaChat] 博查 API 密钥已设置成功！",
+  "bocha-include-sites-set": "§a[OllamaChat] 博查站点白名单设置已更新",
+  "bocha-exclude-sites-set": "§a[OllamaChat] 博查站点黑名单设置已更新",
+  "bocha-time-range-set": "§a[OllamaChat] 博查时间范围已设置为：{days} 天",
+  "bocha-freshness-set": "§a[OllamaChat] 博查时效性已设置为：{freshness}"
 }

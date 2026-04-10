@@ -1,22 +1,60 @@
 {
-  "usage-ollamachat": "§e[OllamaChat] Usage:\n- /ollamachat reload\n- /ollamachat toggle <ai-name>\n- /ollamachat prompt <set|delete|list|select|clear> [args]\n- /ollamachat conversation <new|select|delete|list> [args]",
+  "usage-ollamachat": "§6=== OllamaChat Commands ===\n§e/ollamachat help §7- Show command help\n§e/ollamachat reload §7- Reload configuration\n§e/ollamachat toggle <ai-name> §7- Enable/disable AI integration\n§e/ollamachat prompt <set|delete|list|select|clear> §7- Manage prompts\n§e/ollamachat conversation <new|select|delete|list> §7- Manage conversations\n§e/ollamachat suggests <on|off> §7- Toggle suggested responses\n§e/ollamachat suggests-presets <on|off> §7- Toggle preset suggestions\n§e/ollamachat search <subcommand> §7- Web search management\n§7Type §e/ollamachat help <command> §7for detailed help",
+
+  "usage-ollamachat-short": "§e[OllamaChat] §7Use §e/ollamachat help §7for command list",
+
   "usage-aichat": "§e[OllamaChat] Usage:\n- /aichat <ai-name> <prompt>",
+
+  "help-reload": "§6=== /ollamachat reload ===\n§7Reloads all plugin configurations including config.yml and language files.\n§7Aliases: none\n§7Permission: ollamachat.reload\n§7Example: §e/ollamachat reload",
+
+  "help-toggle": "§6=== /ollamachat toggle ===\n§7Enable or disable specific AI integration.\n§7Usage: §e/ollamachat toggle <ai-name>\n§7Available AI: ollama, plus any configured in other-ai-configs\n§7Permission: ollamachat.toggle\n§7Example: §e/ollamachat toggle ollama",
+
+  "help-prompt": "§6=== /ollamachat prompt ===\n§7Manage custom prompts for AI conversations.\n§eSubcommands:\n§e  set <name> <content> §7- Create/update a prompt\n§e  delete <name> §7- Delete a prompt\n§e  list §7- List all prompts\n§e  select <name> §7- Set default prompt\n§e  clear §7- Clear default prompt\n§7Permissions: ollamachat.prompt.*\n§7Example: §e/ollamachat prompt set helpful \"You are a helpful assistant\"",
+
+  "help-conversation": "§6=== /ollamachat conversation ===\n§7Manage AI conversation history.\n§eSubcommands:\n§e  new <ai-name> <name> §7- Create new conversation\n§e  select <ai-name> <name> §7- Switch to conversation\n§e  delete <ai-name> <name> §7- Delete conversation\n§e  list <ai-name> §7- List all conversations\n§7Permissions: ollamachat.conversation.*\n§7Example: §e/ollamachat conversation new ollama talking",
+
+  "help-suggests": "§6=== /ollamachat suggests ===\n§7Toggle suggested responses for yourself.\n§7Usage: §e/ollamachat suggests <on|off>\n§7Permission: ollamachat.suggests.toggle\n§7Example: §e/ollamachat suggests on",
+
+  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7Enable or disable preset suggestions globally.\n§7Usage: §e/ollamachat suggests-presets <on|off>\n§7Permission: ollamachat.suggests-presets.toggle\n§7Example: §e/ollamachat suggests-presets off",
+
+  "help-search": "§6=== /ollamachat search ===\n§7Manage web search functionality.\n§eSubcommands:\n§e  toggle §7- Enable/disable web search\n§e  status §7- Show current search status\n§e  engine <bocha|brave> §7- Switch search engine\n§e  query <text> §7- Perform a web search\n§e  setkey <engine> <key> §7- Set API key for engine\n§e  setcount <number> §7- Set result count (1-50)\n§e  addkeyword <word> §7- Add trigger keyword\n§e  removekeyword <word> §7- Remove trigger keyword\n§e  listkeywords §7- List all trigger keywords\n§7Permissions: ollamachat.search.*\n§7Example: §e/ollamachat search query Minecraft 1.21 features",
+
+  "help-search-engine": "§6=== /ollamachat search engine ===\n§7Change the active search engine.\n§7Available engines: §eBOCHA §7(requires API key), §eBRAVE §7(requires API key)\n§7Usage: §e/ollamachat search engine <bocha|brave>\n§7Example: §e/ollamachat search engine brave",
+
+  "help-search-setkey": "§6=== /ollamachat search setkey ===\n§7Set API key for a search engine.\n§7Usage: §e/ollamachat search setkey <engine> <api-key>\n§7Supported engines: bocha, brave\n§7Get API key:\n§7  Bocha: https://www.bochaai.com/\n§7  Brave: https://api.search.brave.com/app/keys\n§7Example: §e/ollamachat search setkey brave your-api-key-here",
+
+  "help-search-query": "§6=== /ollamachat search query ===\n§7Perform a web search and display results.\n§7Usage: §e/ollamachat search query <search-text>\n§7Note: Results are shown directly, not sent to AI\n§7Example: §e/ollamachat search query latest Minecraft update",
+
+  "no-help-available": "§c[OllamaChat] No help available for command: {command}",
+
+  "invalid-command": "§c[OllamaChat] Invalid command. Type §e/ollamachat help §cfor usage.",
+
   "reload-success": "§a[OllamaChat] Configuration reloaded successfully!",
+
   "ollama-enabled": "§a[OllamaChat] Ollama integration enabled!",
   "ollama-disabled": "§c[OllamaChat] Ollama integration disabled!",
+
   "toggle-enabled": "§a[OllamaChat] {ai-name} integration enabled!",
   "toggle-disabled": "§c[OllamaChat] {ai-name} integration disabled!",
+
   "invalid-ai-name": "§c[OllamaChat] Invalid AI name! Available AIs: {ai-list}",
+
   "player-only": "§c[OllamaChat] This command can only be used by players!",
+
   "config-invalid": "§c[OllamaChat] Configuration file is invalid, resetting to default.",
   "config-load-failed": "§c[OllamaChat] Failed to load configuration: {error}",
+
   "response-prefix": "§7[OllamaChat] §f",
   "error-prefix": "§c[OllamaChat] §f",
+
   "generating-status": "§a[OllamaChat] Generating... ({progress}%)",
   "complete-status": "§a[OllamaChat] Completed!",
   "error-status": "§c[OllamaChat] Error!",
+
   "no-permission": "§c[OllamaChat] You do not have permission to use this command!",
+
   "prompt-usage": "§e[OllamaChat] Prompt Usage:\n- /ollamachat prompt set <name> <content>\n- /ollamachat prompt delete <name>\n- /ollamachat prompt list\n- /ollamachat prompt select <name>\n- /ollamachat prompt clear",
+
   "prompt-set": "§a[OllamaChat] Prompt '{name}' set successfully!",
   "prompt-deleted": "§a[OllamaChat] Prompt '{name}' deleted successfully!",
   "prompt-not-found": "§c[OllamaChat] Prompt '{name}' not found!",
@@ -26,7 +64,9 @@
   "prompt-cleared": "§a[OllamaChat] Default prompt cleared.",
   "prompt-default": "§a[OllamaChat] Current default prompt: '{name}'",
   "prompt-default-invalid": "§c[OllamaChat] Current default prompt '{name}' is invalid (not found).",
-  "conversation-usage": "§e[OllamaChat] Conversation Usage:\n- /ollamachat conversation new <ai-name> <name>\n- /ollamachat conversation select <ai-name> <id>\n- /ollamachat conversation delete <ai-name> <id>\n- /ollamachat conversation list <ai-name>",
+
+  "conversation-usage": "§e[OllamaChat] Conversation Usage:\n- /ollamachat conversation new <ai-name> <name>\n- /ollamachat conversation select <ai-name> <name>\n- /ollamachat conversation delete <ai-name> <name>\n- /ollamachat conversation list <ai-name>",
+
   "conversation-created": "§a[OllamaChat] Conversation '{name}' created for {ai-name}!",
   "conversation-selected": "§a[OllamaChat] Selected conversation '{name}' for {ai-name}.",
   "conversation-deleted": "§a[OllamaChat] Conversation '{name}' deleted for {ai-name}.",
@@ -35,17 +75,21 @@
   "conversation-list-empty": "§a[OllamaChat] No conversations available for {ai-name}.",
   "conversation-default": "§a[OllamaChat] Current conversation for {ai-name}: '{name}'",
   "conversation-default-invalid": "§c[OllamaChat] Current conversation '{name}' for {ai-name} is invalid (not found).",
+
   "suggested-responses-header": "§a[OllamaChat] Suggested Responses:",
   "suggested-response-prefix": "§7[Click to Reply] §f",
+
   "general-error": "§c[OllamaChat] An unexpected error occurred: {error}",
   "streaming-interrupted": "§c[OllamaChat] Streaming response was interrupted.",
   "database-error": "§c[OllamaChat] Database error occurred: {error}",
   "response-truncated": "§e[OllamaChat] Response was truncated due to length limit.",
   "json-render-error": "§c[OllamaChat] Failed to render suggested response: {error}",
+
   "suggests-enabled": "§a[OllamaChat] Suggested responses enabled for {player}!",
   "suggests-disabled": "§c[OllamaChat] Suggested responses disabled for {player}!",
   "suggests-rate-limit": "§c[OllamaChat] Please wait {seconds} seconds before generating more suggestions.",
   "suggested-response-hover": "§eClick to send this suggestion as a prompt!",
+
   "suggests-presets-enabled": "§a[OllamaChat] Suggested response presets have been enabled.",
   "suggests-presets-disabled": "§c[OllamaChat] Suggested response presets have been disabled.",
 
@@ -58,35 +102,32 @@
   "websearch-source": "§7Source: {site}",
   "websearch-url": "§7URL: {url}",
 
-  "search-engine-changed": "§a[OllamaChat] Search engine changed to: {engine}",
-  "search-engine-current": "§e[OllamaChat] Current search engine: {engine}",
-  "search-engine-available": "§e[OllamaChat] Available search engines: bocha, brave",
-
-  "brave-api-key-set": "§a[OllamaChat] Brave API key has been set successfully!",
-  "brave-country-set": "§a[OllamaChat] Brave country set to: {country}",
-  "brave-search-lang-set": "§a[OllamaChat] Brave search language set to: {lang}",
-  "brave-ui-lang-set": "§a[OllamaChat] Brave UI language set to: {lang}",
-  "brave-safe-search-set": "§a[OllamaChat] Brave safe search level set to: {level}",
-
-  "search-engine-not-configured": "§c[OllamaChat] The selected search engine ({engine}) is not properly configured. Please check your config.yml",
-  "search-engine-missing-api-key": "§c[OllamaChat] API key for {engine} is missing. Please set it using /ollamachat search setkey <engine> <key>",
-
-  "search-setkey-usage-multi": "§c[OllamaChat] Usage: /ollamachat search setkey <engine> <api-key>\nAvailable engines: bocha, brave",
-  "search-setkey-bocha": "§a[OllamaChat] Bocha API key has been set successfully!",
-  "search-setkey-brave": "§a[OllamaChat] Brave API key has been set successfully!",
-
   "search-usage": "§e[OllamaChat] Search Command Usage:\n- /ollamachat search toggle - Enable/disable web search\n- /ollamachat search status - Show search status\n- /ollamachat search engine [name] - Show/change search engine\n- /ollamachat search query <text> - Perform a web search\n- /ollamachat search setkey <engine> <key> - Set API key for engine\n- /ollamachat search setcount <number> - Set result count (1-50)\n- /ollamachat search addkeyword <word> - Add trigger keyword\n- /ollamachat search removekeyword <word> - Remove trigger keyword\n- /ollamachat search listkeywords - List all trigger keywords",
+
   "search-query-usage": "§c[OllamaChat] Usage: /ollamachat search query <search text>",
-  "search-setkey-usage": "§c[OllamaChat] Usage: /ollamachat search setkey <api-key>",
+  "search-setkey-usage": "§c[OllamaChat] Usage: /ollamachat search setkey <engine> <api-key>",
+  "search-setkey-usage-multi": "§c[OllamaChat] Usage: /ollamachat search setkey <engine> <api-key>\nAvailable engines: bocha, brave",
   "search-setcount-usage": "§c[OllamaChat] Usage: /ollamachat search setcount <number>",
   "search-addkeyword-usage": "§c[OllamaChat] Usage: /ollamachat search addkeyword <word>",
   "search-removekeyword-usage": "§c[OllamaChat] Usage: /ollamachat search removekeyword <word>",
+
   "search-enabled": "§a[OllamaChat] Web search has been enabled!",
   "search-disabled": "§c[OllamaChat] Web search has been disabled!",
-  "search-status": "§e[OllamaChat] Search Status:\n§7Enabled: {status}\n§7API Key: {api-key}\n§7Result Count: {result-count}\n§7Auto Trigger: {auto-trigger}",
-  "search-api-key-set": "§a[OllamaChat] Bocha API key has been set successfully!",
+
+  "search-status": "§e[OllamaChat] Search Status:\n§7Enabled: {status}\n§7Engine: {engine}\n§7API Key: {api-key}\n§7Result Count: {result-count}\n§7Auto Trigger: {auto-trigger}",
+
+  "search-engine-changed": "§a[OllamaChat] Search engine changed to: {engine}",
+  "search-engine-current": "§e[OllamaChat] Current search engine: {engine}",
+  "search-engine-available": "§e[OllamaChat] Available search engines: bocha, brave",
+  "search-engine-not-configured": "§c[OllamaChat] The selected search engine ({engine}) is not properly configured. Please check your config.yml",
+  "search-engine-missing-api-key": "§c[OllamaChat] API key for {engine} is missing. Please set it using /ollamachat search setkey <engine> <key>",
+
+  "search-api-key-set": "§a[OllamaChat] {engine} API key has been set successfully!",
+  "search-setkey-bocha": "§a[OllamaChat] Bocha API key has been set successfully!",
+  "search-setkey-brave": "§a[OllamaChat] Brave API key has been set successfully!",
   "search-count-set": "§a[OllamaChat] Search result count set to {count}",
   "search-count-invalid": "§c[OllamaChat] Invalid count! Please enter a number between 1 and 50.",
+
   "search-keyword-added": "§a[OllamaChat] Keyword '{keyword}' has been added to trigger list!",
   "search-keyword-removed": "§a[OllamaChat] Keyword '{keyword}' has been removed from trigger list!",
   "search-keyword-exists": "§c[OllamaChat] Keyword '{keyword}' already exists in trigger list!",
@@ -94,7 +135,21 @@
   "search-keywords-list": "§e[OllamaChat] Trigger Keywords: §e{keywords}",
   "search-keywords-header": "§e[OllamaChat] Trigger Keywords:",
   "search-keywords-empty": "§e[OllamaChat] No trigger keywords configured.",
+
   "search-disabled-error": "§c[OllamaChat] Web search is currently disabled. Use /ollamachat search toggle to enable.",
-  "search-no-api-key": "§c[OllamaChat] Bocha API key is not configured! Use /ollamachat search setkey <api-key> to set it.",
-  "search-result-format": "§e[{index}] §f{title}\n§7  Source: {site}\n§7  {snippet}\n§7  URL: {url}"
+  "search-no-api-key": "§c[OllamaChat] {engine} API key is not configured! Use /ollamachat search setkey {engine} <key> to set it.",
+
+  "search-result-format": "§e[{index}] §f{title}\n§7  Source: {site}\n§7  {snippet}\n§7  URL: {url}",
+
+  "brave-api-key-set": "§a[OllamaChat] Brave API key has been set successfully!",
+  "brave-country-set": "§a[OllamaChat] Brave country set to: {country}",
+  "brave-search-lang-set": "§a[OllamaChat] Brave search language set to: {lang}",
+  "brave-ui-lang-set": "§a[OllamaChat] Brave UI language set to: {lang}",
+  "brave-safe-search-set": "§a[OllamaChat] Brave safe search level set to: {level}",
+
+  "bocha-api-key-set": "§a[OllamaChat] Bocha API key has been set successfully!",
+  "bocha-include-sites-set": "§a[OllamaChat] Bocha include sites setting updated",
+  "bocha-exclude-sites-set": "§a[OllamaChat] Bocha exclude sites setting updated",
+  "bocha-time-range-set": "§a[OllamaChat] Bocha time range set to: {days} days",
+  "bocha-freshness-set": "§a[OllamaChat] Bocha freshness set to: {freshness}"
 }

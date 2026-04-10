@@ -1,9 +1,10 @@
 package com.ollamachat.core;
 
+import com.ollamachat.Metrics;
 import com.ollamachat.ChatHistoryManager;
-import com.ollamachat.DatabaseManager;
 import com.ollamachat.DependencyLoader;
 import com.ollamachat.ProgressManager;
+import com.ollamachat.DatabaseManager;
 import com.ollamachat.WebSearchService;
 import com.ollamachat.api.OllamaChatAPI;
 import com.ollamachat.api.OllamaChatAPIImpl;
@@ -39,6 +40,16 @@ public class Ollamachat extends JavaPlugin {
 
         configManager = new ConfigManager(this);
         configManager.initialize();
+
+        // You can find the plugin id of your plugins on
+        // the page https://bstats.org/what-is-my-plugin-id
+        int pluginId = 30682;
+        Metrics metrics = new Metrics(this, pluginId);
+
+        // Optional: Add custom charts
+        metrics.addCustomChart(
+                new Metrics.SimplePie("chart_id", () -> "My value")
+        );
 
         try {
             databaseManager = new DatabaseManager(this);

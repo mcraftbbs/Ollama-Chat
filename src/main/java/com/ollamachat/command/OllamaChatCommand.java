@@ -2,7 +2,6 @@ package com.ollamachat.command;
 
 import com.ollamachat.core.Ollamachat;
 import com.ollamachat.core.ConfigManager;
-import com.ollamachat.WebSearchService;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,9 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class OllamaChatCommand implements CommandExecutor {
     private final Ollamachat plugin;
@@ -27,8 +24,12 @@ public class OllamaChatCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(configManager.getMessage("usage-ollamachat-short", null));
             return true;
+        }
+
+        if (args[0].equalsIgnoreCase("help")) {
+            return handleHelp(sender, args);
         }
 
         switch (args[0].toLowerCase()) {
@@ -47,9 +48,29 @@ public class OllamaChatCommand implements CommandExecutor {
             case "search":
                 return handleSearch(sender, args);
             default:
-                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("usage-ollamachat", null));
+                sender.sendMessage(ChatColor.RED + configManager.getMessage("invalid-command", null));
                 return true;
         }
+    }
+
+    private boolean handleHelp(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            sender.sendMessage(configManager.getMessage("usage-ollamachat", null));
+            return true;
+        }
+
+        String helpCommand = args[1].toLowerCase();
+        String helpKey = "help-" + helpCommand;
+
+        String helpMessage = configManager.getMessage(helpKey, null);
+        if (helpMessage.startsWith("§c[OllamaChat] Missing language key: help-")) {
+            sender.sendMessage(configManager.getMessage("no-help-available",
+                    Map.of("command", args[1])));
+        } else {
+            sender.sendMessage(helpMessage);
+        }
+
+        return true;
     }
 
     private boolean handleReload(CommandSender sender) {
@@ -59,10 +80,8 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         try {
-            //
             plugin.reloadConfig();
             configManager.reloadConfigValues();
-            //
             configManager.reloadLanguage();
 
             sender.sendMessage(ChatColor.GREEN + configManager.getMessage("reload-success", null));
@@ -84,7 +103,7 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-toggle", null));
             return true;
         }
 
@@ -109,7 +128,7 @@ public class OllamaChatCommand implements CommandExecutor {
 
     private boolean handlePrompt(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("prompt-usage", null));
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-prompt", null));
             return true;
         }
 
@@ -127,7 +146,7 @@ public class OllamaChatCommand implements CommandExecutor {
             case "clear":
                 return handlePromptClear(sender);
             default:
-                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("prompt-usage", null));
+                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-prompt", null));
                 return true;
         }
     }
@@ -138,7 +157,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 4) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("prompt-usage", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-prompt", null));
             return true;
         }
 
@@ -157,7 +176,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("prompt-usage", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-prompt", null));
             return true;
         }
 
@@ -204,7 +223,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("prompt-usage", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-prompt", null));
             return true;
         }
 
@@ -235,13 +254,25 @@ public class OllamaChatCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + configManager.getMessage("player-only", null));
             return true;
         }
-        if (args.length < 3) {
-            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("conversation-usage", null));
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-conversation", null));
             return true;
         }
 
         Player player = (Player) sender;
         String subCommand = args[1].toLowerCase();
+
+        if (subCommand.equals("list") && args.length == 2) {
+            // If no AI name specified, show help.
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-conversation", null));
+            return true;
+        }
+
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-conversation", null));
+            return true;
+        }
+
         String aiName = args[2];
 
         if (!aiName.equals("ollama") && !configManager.getOtherAIConfigs().containsKey(aiName)) {
@@ -260,7 +291,7 @@ public class OllamaChatCommand implements CommandExecutor {
             case "list":
                 return handleConversationList(player, aiName);
             default:
-                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("conversation-usage", null));
+                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-conversation", null));
                 return true;
         }
     }
@@ -271,7 +302,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + configManager.getMessage("conversation-usage", null));
+            player.sendMessage(ChatColor.RED + configManager.getMessage("help-conversation", null));
             return true;
         }
 
@@ -303,7 +334,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + configManager.getMessage("conversation-usage", null));
+            player.sendMessage(ChatColor.RED + configManager.getMessage("help-conversation", null));
             return true;
         }
 
@@ -327,7 +358,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + configManager.getMessage("conversation-usage", null));
+            player.sendMessage(ChatColor.RED + configManager.getMessage("help-conversation", null));
             return true;
         }
 
@@ -391,7 +422,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-suggests", null));
             return true;
         }
 
@@ -407,7 +438,7 @@ public class OllamaChatCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + configManager.getMessage("suggests-disabled",
                     Map.of("player", player.getName())));
         } else {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-suggests", null));
         }
         return true;
     }
@@ -418,7 +449,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-suggests-presets", null));
             return true;
         }
 
@@ -430,14 +461,14 @@ public class OllamaChatCommand implements CommandExecutor {
             configManager.setSuggestedResponsePresetsEnabled(false);
             sender.sendMessage(ChatColor.RED + configManager.getMessage("suggests-presets-disabled", null));
         } else {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("usage-ollamachat", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-suggests-presets", null));
         }
         return true;
     }
 
     private boolean handleSearch(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("search-usage", null));
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-search", null));
             return true;
         }
 
@@ -463,64 +494,9 @@ public class OllamaChatCommand implements CommandExecutor {
             case "listkeywords":
                 return handleSearchListKeywords(sender);
             default:
-                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("search-usage", null));
+                sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-search", null));
                 return true;
         }
-    }
-
-    private boolean handleSearchEngine(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("ollamachat.search.engine")) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("no-permission", null));
-            return true;
-        }
-
-        if (args.length < 3) {
-            ConfigManager.SearchEngine current = configManager.getWebSearchEngine();
-            sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-engine-current",
-                    Map.of("engine", current.getConfigName())));
-            sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-engine-available", null));
-            return true;
-        }
-
-        String engineName = args[2].toLowerCase();
-        try {
-            ConfigManager.SearchEngine newEngine = ConfigManager.SearchEngine.fromString(engineName);
-            configManager.setWebSearchEngine(newEngine);
-            sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-engine-changed",
-                    Map.of("engine", newEngine.getConfigName())));
-        } catch (IllegalArgumentException e) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("search-engine-available", null));
-        }
-        return true;
-    }
-
-    private boolean handleSearchSetKey(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("ollamachat.search.setkey")) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("no-permission", null));
-            return true;
-        }
-
-        if (args.length < 4) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("search-setkey-usage-multi", null));
-            return true;
-        }
-
-        String engine = args[2].toLowerCase();
-        String apiKey = args[3];
-
-        switch (engine) {
-            case "bocha":
-                configManager.setBochaApiKey(apiKey);
-                sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-setkey-bocha", null));
-                break;
-            case "brave":
-                configManager.setBraveApiKey(apiKey);
-                sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-setkey-brave", null));
-                break;
-            default:
-                sender.sendMessage(ChatColor.RED + configManager.getMessage("search-engine-available", null));
-        }
-        return true;
     }
 
     private boolean handleSearchToggle(CommandSender sender) {
@@ -550,13 +526,36 @@ public class OllamaChatCommand implements CommandExecutor {
 
         sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-status", placeholders));
 
-        //
-        List<String> keywords = configManager.getWebSearchTriggerKeywords();
+        // Show trigger keywords
+        java.util.List<String> keywords = configManager.getWebSearchTriggerKeywords();
         if (!keywords.isEmpty()) {
             sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-keywords-list",
                     Map.of("keywords", String.join("§7, §e", keywords))));
         }
 
+        return true;
+    }
+
+    private boolean handleSearchEngine(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ollamachat.search.engine")) {
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("no-permission", null));
+            return true;
+        }
+
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("help-search-engine", null));
+            return true;
+        }
+
+        String engineName = args[2].toLowerCase();
+        try {
+            ConfigManager.SearchEngine newEngine = ConfigManager.SearchEngine.fromString(engineName);
+            configManager.setWebSearchEngine(newEngine);
+            sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-engine-changed",
+                    Map.of("engine", newEngine.getConfigName())));
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("search-engine-available", null));
+        }
         return true;
     }
 
@@ -567,7 +566,7 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("search-query-usage", null));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-search-query", null));
             return true;
         }
 
@@ -578,19 +577,26 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
 
-        if (configManager.getBochaApiKey() == null || configManager.getBochaApiKey().isEmpty()) {
-            sender.sendMessage(ChatColor.RED + configManager.getMessage("search-no-api-key", null));
-            return true;
+        if (configManager.getWebSearchEngine() == ConfigManager.SearchEngine.BOCHA) {
+            if (configManager.getBochaApiKey() == null || configManager.getBochaApiKey().isEmpty()) {
+                sender.sendMessage(ChatColor.RED + configManager.getMessage("search-no-api-key", null));
+                return true;
+            }
+        } else if (configManager.getWebSearchEngine() == ConfigManager.SearchEngine.BRAVE) {
+            if (configManager.getBraveApiKey() == null || configManager.getBraveApiKey().isEmpty()) {
+                sender.sendMessage(ChatColor.RED + configManager.getMessage("search-no-api-key", null));
+                return true;
+            }
         }
 
-        //
+        // Search asynchronously.
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 sender.sendMessage(configManager.getMessage("websearch-starting",
                         Map.of("query", query)));
 
-                WebSearchService webSearchService = plugin.getWebSearchService();
-                List<WebSearchService.SearchResult> results =
+                com.ollamachat.WebSearchService webSearchService = plugin.getWebSearchService();
+                java.util.List<com.ollamachat.WebSearchService.SearchResult> results =
                         webSearchService.search(query, configManager.getWebSearchResultCount()).join();
 
                 if (results.isEmpty()) {
@@ -602,9 +608,9 @@ public class OllamaChatCommand implements CommandExecutor {
                 sender.sendMessage(configManager.getMessage("websearch-completed",
                         Map.of("count", String.valueOf(results.size()))));
 
-                //
+                // Show search results
                 for (int i = 0; i < results.size(); i++) {
-                    WebSearchService.SearchResult result = results.get(i);
+                    com.ollamachat.WebSearchService.SearchResult result = results.get(i);
                     Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("index", String.valueOf(i + 1));
                     placeholders.put("title", result.getTitle());
@@ -622,6 +628,35 @@ public class OllamaChatCommand implements CommandExecutor {
             }
         });
 
+        return true;
+    }
+
+    private boolean handleSearchSetKey(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ollamachat.search.setkey")) {
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("no-permission", null));
+            return true;
+        }
+
+        if (args.length < 4) {
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("help-search-setkey", null));
+            return true;
+        }
+
+        String engine = args[2].toLowerCase();
+        String apiKey = args[3];
+
+        switch (engine) {
+            case "bocha":
+                configManager.setBochaApiKey(apiKey);
+                sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-setkey-bocha", null));
+                break;
+            case "brave":
+                configManager.setBraveApiKey(apiKey);
+                sender.sendMessage(ChatColor.GREEN + configManager.getMessage("search-setkey-brave", null));
+                break;
+            default:
+                sender.sendMessage(ChatColor.RED + configManager.getMessage("search-engine-available", null));
+        }
         return true;
     }
 
@@ -663,7 +698,7 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         String keyword = args[2].toLowerCase();
-        List<String> keywords = configManager.getWebSearchTriggerKeywords();
+        java.util.List<String> keywords = configManager.getWebSearchTriggerKeywords();
 
         if (keywords.contains(keyword)) {
             sender.sendMessage(ChatColor.RED + configManager.getMessage("search-keyword-exists",
@@ -690,7 +725,7 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         String keyword = args[2].toLowerCase();
-        List<String> keywords = configManager.getWebSearchTriggerKeywords();
+        java.util.List<String> keywords = configManager.getWebSearchTriggerKeywords();
 
         if (!keywords.contains(keyword)) {
             sender.sendMessage(ChatColor.RED + configManager.getMessage("search-keyword-not-found",
@@ -711,7 +746,7 @@ public class OllamaChatCommand implements CommandExecutor {
             return true;
         }
 
-        List<String> keywords = configManager.getWebSearchTriggerKeywords();
+        java.util.List<String> keywords = configManager.getWebSearchTriggerKeywords();
         if (keywords.isEmpty()) {
             sender.sendMessage(ChatColor.YELLOW + configManager.getMessage("search-keywords-empty", null));
         } else {

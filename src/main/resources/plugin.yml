@@ -8,12 +8,14 @@ website: https://chat.sarskin.cn/invite/iHgI6LTX
 
 commands:
   ollamachat:
-    description: Manage OllamaChat plugin (reload configuration or toggle AI)
-    usage: "{usage-ollamachat}"
-    permission: ollamachat.reload
+    description: Main command for OllamaChat plugin
+    usage: /<command> help - Show command help
+    aliases: [oc]
+    permission: ollamachat.use
   aichat:
-    description: Interact with other AI services
-    usage: "{usage-aichat}"
+    description: Chat with AI
+    usage: /<command> <ai-name> <message>
+    aliases: [ai]
     permission: ollamachat.use
 
 permissions:
@@ -75,6 +77,7 @@ permissions:
       ollamachat.search.toggle: true
       ollamachat.search.status: true
       ollamachat.search.query: true
+      ollamachat.search.engine: true
       ollamachat.search.setkey: true
       ollamachat.search.setcount: true
       ollamachat.search.keywords: true
@@ -91,8 +94,12 @@ permissions:
     description: Allows performing web searches
     default: true
 
+  ollamachat.search.engine:
+    description: Allows changing search engine
+    default: op
+
   ollamachat.search.setkey:
-    description: Allows setting Bocha API key
+    description: Allows setting API keys for search engines
     default: op
 
   ollamachat.search.setcount:

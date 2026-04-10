@@ -85,7 +85,7 @@ public class DependencyLoader {
         try {
             ClassLoader pluginClassLoader = plugin.getClass().getClassLoader();
 
-            // 仅在类加载器是 URLClassLoader 或包含 addURL 方法时注入
+            // Inject only when the classloader is a URLClassLoader or contains an addURL method
             Method addURLMethod = null;
             Class<?> current = pluginClassLoader.getClass();
             while (current != null && addURLMethod == null) {

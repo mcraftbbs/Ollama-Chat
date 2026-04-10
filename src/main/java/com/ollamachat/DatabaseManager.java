@@ -57,7 +57,7 @@ public class DatabaseManager {
 
     private void initializeMySQL() {
         try {
-            // 确认 MySQL 驱动是否存在
+            // Verify the existence of the MySQL driver.
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
             } catch (ClassNotFoundException e) {
@@ -73,7 +73,7 @@ public class DatabaseManager {
             String username = config.getString("database.mysql.username", "root");
             String password = config.getString("database.mysql.password", "");
 
-            // 创建 Hikari 配置
+            // Set up Hikari configuration
             HikariConfig hikariConfig = new HikariConfig();
             hikariConfig.setJdbcUrl(String.format(
                     "jdbc:mysql://%s:%d/%s?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true",
@@ -81,7 +81,7 @@ public class DatabaseManager {
             hikariConfig.setUsername(username);
             hikariConfig.setPassword(password);
 
-            // 从配置文件读取连接池参数
+            // Retrieve connection pool parameters from config file.
             hikariConfig.setMaximumPoolSize(config.getInt("database.mysql.hikari.maximum-pool-size", 10));
             hikariConfig.setMinimumIdle(config.getInt("database.mysql.hikari.minimum-idle", 2));
             hikariConfig.setConnectionTimeout(config.getLong("database.mysql.hikari.connection-timeout", 30000));
@@ -114,18 +114,18 @@ public class DatabaseManager {
 
     private void createTables() throws SQLException {
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
-            // 根据数据库类型选择不同的列类型
+            // Choose column types according to the database type.
             String uuidType = databaseType.equals("mysql") ? "VARCHAR(36)" : "TEXT";
             String textType = databaseType.equals("mysql") ? "VARCHAR(255)" : "TEXT";
             String aiModelType = databaseType.equals("mysql") ? "VARCHAR(100)" : "TEXT"; // 减少长度
             String longTextType = databaseType.equals("mysql") ? "TEXT" : "TEXT";
 
-            // Players 表
+            // Players table
             stmt.execute("CREATE TABLE IF NOT EXISTS players (" +
                     "uuid " + uuidType + " PRIMARY KEY," +
                     "username " + textType + " NOT NULL)");
 
-            // Conversations 表 - 减少 ai_model 长度
+            // Conversations table
             stmt.execute("CREATE TABLE IF NOT EXISTS conversations (" +
                     "conversation_id " + uuidType + " NOT NULL," +
                     "player_uuid " + uuidType + " NOT NULL," +
@@ -135,7 +135,7 @@ public class DatabaseManager {
                     "PRIMARY KEY (conversation_id, player_uuid, ai_model)," +
                     "FOREIGN KEY (player_uuid) REFERENCES players(uuid))");
 
-            // Chat history 表
+            // Chat history table
             stmt.execute("CREATE TABLE IF NOT EXISTS chat_history (" +
                     "id INTEGER PRIMARY KEY " + (databaseType.equals("sqlite") ? "AUTOINCREMENT" : "AUTO_INCREMENT") + "," +
                     "player_uuid " + uuidType + " NOT NULL," +
