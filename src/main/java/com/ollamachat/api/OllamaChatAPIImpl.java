@@ -2,7 +2,7 @@ package com.ollamachat.api;
 
 import com.ollamachat.AIService;
 import com.ollamachat.ChatHistoryManager;
-import com.ollamachat.WebSearchService;
+import com.ollamachat.search.WebSearchService;
 import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
 import com.google.gson.Gson;

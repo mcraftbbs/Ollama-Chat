@@ -2,6 +2,7 @@ name: OllamaChat
 version: '${version}'
 main: com.ollamachat.core.Ollamachat
 api-version: '1.20'
+folia-supported: true
 authors: [xwwsdd]
 description: A plugin used to connect Ollama and OtherAI with Minecraft, providing a public API for other plugins.
 website: https://chat.sarskin.cn/invite/iHgI6LTX

@@ -2,6 +2,7 @@ package com.ollamachat.command;
 
 import com.ollamachat.core.Ollamachat;
 import com.ollamachat.core.ConfigManager;
+import com.ollamachat.scheduler.SchedulerUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -590,13 +591,13 @@ public class OllamaChatCommand implements CommandExecutor {
         }
 
         // Search asynchronously.
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerUtils.runAsync(plugin, () -> {
             try {
                 sender.sendMessage(configManager.getMessage("websearch-starting",
                         Map.of("query", query)));
 
-                com.ollamachat.WebSearchService webSearchService = plugin.getWebSearchService();
-                java.util.List<com.ollamachat.WebSearchService.SearchResult> results =
+                com.ollamachat.search.WebSearchService webSearchService = plugin.getWebSearchService();
+                java.util.List<com.ollamachat.search.WebSearchService.SearchResult> results =
                         webSearchService.search(query, configManager.getWebSearchResultCount()).join();
 
                 if (results.isEmpty()) {
@@ -610,7 +611,7 @@ public class OllamaChatCommand implements CommandExecutor {
 
                 // Show search results
                 for (int i = 0; i < results.size(); i++) {
-                    com.ollamachat.WebSearchService.SearchResult result = results.get(i);
+                    com.ollamachat.search.WebSearchService.SearchResult result = results.get(i);
                     Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("index", String.valueOf(i + 1));
                     placeholders.put("title", result.getTitle());

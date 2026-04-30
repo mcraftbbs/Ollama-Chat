@@ -5,7 +5,6 @@ import com.ollamachat.ChatHistoryManager;
 import com.ollamachat.DependencyLoader;
 import com.ollamachat.ProgressManager;
 import com.ollamachat.DatabaseManager;
-import com.ollamachat.WebSearchService;
 import com.ollamachat.api.OllamaChatAPI;
 import com.ollamachat.api.OllamaChatAPIImpl;
 import com.ollamachat.chat.ChatTriggerHandler;
@@ -13,6 +12,7 @@ import com.ollamachat.chat.SuggestedResponseHandler;
 import com.ollamachat.command.AIChatCommand;
 import com.ollamachat.command.OllamaChatCommand;
 import com.ollamachat.command.OllamaChatTabCompleter;
+import com.ollamachat.search.WebSearchService;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;

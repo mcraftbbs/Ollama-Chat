@@ -2,12 +2,12 @@ package com.ollamachat;
 
 import com.ollamachat.core.Ollamachat;
 import com.ollamachat.core.ConfigManager;
+import com.ollamachat.scheduler.SchedulerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +15,13 @@ import java.util.UUID;
 
 public class ProgressManager {
     private final Ollamachat plugin;
-    private final ConfigManager configManager; // Add ConfigManager reference
+    private final ConfigManager configManager;
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
-    private final Map<UUID, BukkitTask> tasks = new HashMap<>();
+    private final Map<UUID, Object> tasks = new HashMap<>();
 
     public ProgressManager(Ollamachat plugin) {
         this.plugin = plugin;
-        this.configManager = plugin.getConfigManager(); // Initialize ConfigManager
+        this.configManager = plugin.getConfigManager();
     }
 
     public void startProgress(Player player, String title, BarColor color, BarStyle style) {
@@ -37,7 +37,7 @@ public class ProgressManager {
 
     private void handleBossBarProgress(Player player, UUID uuid, String title, BarColor color, BarStyle style) {
         BossBar bossBar = Bukkit.createBossBar(
-                configManager.getMessage("generating-status", Map.of("progress", "0")), // Use configManager
+                configManager.getMessage("generating-status", Map.of("progress", "0")),
                 color,
                 style
         );
@@ -47,22 +47,48 @@ public class ProgressManager {
         bossBars.put(uuid, bossBar);
 
         long interval = 20L * plugin.getConfig().getInt("progress-display.update-interval", 1);
-        tasks.put(uuid, Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (!player.isOnline()) {
-                cleanup(player);
-            }
-        }, 0, interval));
+        // Ensure minimum interval of 1 tick
+        interval = Math.max(1, interval);
+
+        // Use SchedulerUtils for Folia compatibility with safe delay of 1 tick
+        Object taskHandle = SchedulerUtils.runTaskTimerOnEntity(
+                plugin,
+                player,
+                () -> {
+                    if (!player.isOnline()) {
+                        cleanup(player);
+                    }
+                },
+                1, // Use 1 tick delay instead of 0 to avoid Folia error
+                interval
+        );
+
+        tasks.put(uuid, taskHandle);
     }
 
     private void handleActionBarProgress(Player player, UUID uuid) {
         long interval = 20L * plugin.getConfig().getInt("progress-display.update-interval", 1);
-        tasks.put(uuid, Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (!player.isOnline()) {
-                cleanup(player);
-                return;
-            }
-            player.sendActionBar(configManager.getMessage("generating-status", Map.of("progress", "0"))); // Use configManager
-        }, 0, interval));
+        // Ensure minimum interval of 1 tick
+        interval = Math.max(1, interval);
+
+        // Use SchedulerUtils for Folia compatibility with safe delay of 1 tick
+        Object taskHandle = SchedulerUtils.runTaskTimerOnEntity(
+                plugin,
+                player,
+                () -> {
+                    if (!player.isOnline()) {
+                        cleanup(player);
+                        return;
+                    }
+                    player.sendActionBar(
+                            configManager.getMessage("generating-status", Map.of("progress", "0"))
+                    );
+                },
+                1, // Use 1 tick delay instead of 0 to avoid Folia error
+                interval
+        );
+
+        tasks.put(uuid, taskHandle);
     }
 
     public void complete(Player player) {
@@ -70,28 +96,40 @@ public class ProgressManager {
         if (bossBars.containsKey(uuid)) {
             BossBar bossBar = bossBars.get(uuid);
             bossBar.setProgress(1.0);
-            bossBar.setTitle(configManager.getMessage("complete-status", null)); // Use configManager
+            bossBar.setTitle(configManager.getMessage("complete-status", null));
             bossBar.setColor(BarColor.GREEN);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
-        } else {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
         }
+
+        // Schedule cleanup after 2 seconds (40 ticks)
+        SchedulerUtils.runOnEntityLater(
+                plugin,
+                player,
+                () -> cleanup(player),
+                40L
+        );
     }
 
     public void error(Player player) {
         UUID uuid = player.getUniqueId();
         if (bossBars.containsKey(uuid)) {
             BossBar bossBar = bossBars.get(uuid);
-            bossBar.setTitle(configManager.getMessage("error-status", null)); // Use configManager
+            bossBar.setTitle(configManager.getMessage("error-status", null));
             bossBar.setColor(BarColor.RED);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> cleanup(player), 40L);
         }
+
+        // Schedule cleanup after 2 seconds (40 ticks)
+        SchedulerUtils.runOnEntityLater(
+                plugin,
+                player,
+                () -> cleanup(player),
+                40L
+        );
     }
 
     public void cleanup(Player player) {
         UUID uuid = player.getUniqueId();
         if (tasks.containsKey(uuid)) {
-            tasks.get(uuid).cancel();
+            SchedulerUtils.cancelTask(tasks.get(uuid));
             tasks.remove(uuid);
         }
         if (bossBars.containsKey(uuid)) {

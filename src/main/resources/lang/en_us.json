@@ -5,19 +5,19 @@
 
   "usage-aichat": "§e[OllamaChat] Usage:\n- /aichat <ai-name> <prompt>",
 
-  "help-reload": "§6=== /ollamachat reload ===\n§7Reloads all plugin configurations including config.yml and language files.\n§7Aliases: none\n§7Permission: ollamachat.reload\n§7Example: §e/ollamachat reload",
+  "help-reload": "§6=== /ollamachat reload ===\n§7Reloads all plugin configurations including config.yml and language files.\n§7Aliases: none\n \n§7Example: §e/ollamachat reload",
 
-  "help-toggle": "§6=== /ollamachat toggle ===\n§7Enable or disable specific AI integration.\n§7Usage: §e/ollamachat toggle <ai-name>\n§7Available AI: ollama, plus any configured in other-ai-configs\n§7Permission: ollamachat.toggle\n§7Example: §e/ollamachat toggle ollama",
+  "help-toggle": "§6=== /ollamachat toggle ===\n§7Enable or disable specific AI integration.\n§7Usage: §e/ollamachat toggle <ai-name>\n§7Available AI: ollama, plus any configured in other-ai-configs\n \n§7Example: §e/ollamachat toggle ollama",
 
-  "help-prompt": "§6=== /ollamachat prompt ===\n§7Manage custom prompts for AI conversations.\n§eSubcommands:\n§e  set <name> <content> §7- Create/update a prompt\n§e  delete <name> §7- Delete a prompt\n§e  list §7- List all prompts\n§e  select <name> §7- Set default prompt\n§e  clear §7- Clear default prompt\n§7Permissions: ollamachat.prompt.*\n§7Example: §e/ollamachat prompt set helpful \"You are a helpful assistant\"",
+  "help-prompt": "§6=== /ollamachat prompt ===\n§7Manage custom prompts for AI conversations.\n§eSubcommands:\n§e  set <name> <content> §7- Create/update a prompt\n§e  delete <name> §7- Delete a prompt\n§e  list §7- List all prompts\n§e  select <name> §7- Set default prompt\n§e  clear §7- Clear default prompt\n \n§7Example: §e/ollamachat prompt set helpful \"You are a helpful assistant\"",
 
-  "help-conversation": "§6=== /ollamachat conversation ===\n§7Manage AI conversation history.\n§eSubcommands:\n§e  new <ai-name> <name> §7- Create new conversation\n§e  select <ai-name> <name> §7- Switch to conversation\n§e  delete <ai-name> <name> §7- Delete conversation\n§e  list <ai-name> §7- List all conversations\n§7Permissions: ollamachat.conversation.*\n§7Example: §e/ollamachat conversation new ollama talking",
+  "help-conversation": "§6=== /ollamachat conversation ===\n§7Manage AI conversation history.\n§eSubcommands:\n§e  new <ai-name> <name> §7- Create new conversation\n§e  select <ai-name> <name> §7- Switch to conversation\n§e  delete <ai-name> <name> §7- Delete conversation\n§e  list <ai-name> §7- List all conversations\n \n§7Example: §e/ollamachat conversation new ollama talking",
 
-  "help-suggests": "§6=== /ollamachat suggests ===\n§7Toggle suggested responses for yourself.\n§7Usage: §e/ollamachat suggests <on|off>\n§7Permission: ollamachat.suggests.toggle\n§7Example: §e/ollamachat suggests on",
+  "help-suggests": "§6=== /ollamachat suggests ===\n§7Toggle suggested responses for yourself.\n§7Usage: §e/ollamachat suggests <on|off>\n \n§7Example: §e/ollamachat suggests on",
 
-  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7Enable or disable preset suggestions globally.\n§7Usage: §e/ollamachat suggests-presets <on|off>\n§7Permission: ollamachat.suggests-presets.toggle\n§7Example: §e/ollamachat suggests-presets off",
+  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7Enable or disable preset suggestions globally.\n§7Usage: §e/ollamachat suggests-presets <on|off>\n \n§7Example: §e/ollamachat suggests-presets off",
 
-  "help-search": "§6=== /ollamachat search ===\n§7Manage web search functionality.\n§eSubcommands:\n§e  toggle §7- Enable/disable web search\n§e  status §7- Show current search status\n§e  engine <bocha|brave> §7- Switch search engine\n§e  query <text> §7- Perform a web search\n§e  setkey <engine> <key> §7- Set API key for engine\n§e  setcount <number> §7- Set result count (1-50)\n§e  addkeyword <word> §7- Add trigger keyword\n§e  removekeyword <word> §7- Remove trigger keyword\n§e  listkeywords §7- List all trigger keywords\n§7Permissions: ollamachat.search.*\n§7Example: §e/ollamachat search query Minecraft 1.21 features",
+  "help-search": "§6=== /ollamachat search ===\n§7Manage web search functionality.\n§eSubcommands:\n§e  toggle §7- Enable/disable web search\n§e  status §7- Show current search status\n§e  engine <bocha|brave> §7- Switch search engine\n§e  query <text> §7- Perform a web search\n§e  setkey <engine> <key> §7- Set API key for engine\n§e  setcount <number> §7- Set result count (1-50)\n§e  addkeyword <word> §7- Add trigger keyword\n§e  removekeyword <word> §7- Remove trigger keyword\n§e  listkeywords §7- List all trigger keywords\n \n§7Example: §e/ollamachat search query Minecraft 1.21 features",
 
   "help-search-engine": "§6=== /ollamachat search engine ===\n§7Change the active search engine.\n§7Available engines: §eBOCHA §7(requires API key), §eBRAVE §7(requires API key)\n§7Usage: §e/ollamachat search engine <bocha|brave>\n§7Example: §e/ollamachat search engine brave",
 

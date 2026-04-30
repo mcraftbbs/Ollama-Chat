@@ -5,19 +5,19 @@
 
   "usage-aichat": "§e[OllamaChat] 用法说明：\n- /aichat <AI名称> <提示内容> - 与AI对话",
 
-  "help-reload": "§6=== /ollamachat reload ===\n§7重载所有插件配置，包括 config.yml 和语言文件。\n§7别名：无\n§7权限：ollamachat.reload\n§7示例：§e/ollamachat reload",
+  "help-reload": "§6=== /ollamachat reload ===\n§7重载所有插件配置，包括 config.yml 和语言文件。\n§7别名：无\n \n§7示例：§e/ollamachat reload",
 
-  "help-toggle": "§6=== /ollamachat toggle ===\n§7启用或禁用指定的 AI 集成。\n§7用法：§e/ollamachat toggle <AI名称>\n§7可用 AI：ollama，以及 other-ai-configs 中配置的 AI\n§7权限：ollamachat.toggle\n§7示例：§e/ollamachat toggle ollama",
+  "help-toggle": "§6=== /ollamachat toggle ===\n§7启用或禁用指定的 AI 集成。\n§7用法：§e/ollamachat toggle <AI名称>\n§7可用 AI：ollama，以及 other-ai-configs 中配置的 AI\n \n§7示例：§e/ollamachat toggle ollama",
 
-  "help-prompt": "§6=== /ollamachat prompt ===\n§7管理 AI 对话的自定义提示词。\n§e子命令：\n§e  set <名称> <内容> §7- 创建/更新提示词\n§e  delete <名称> §7- 删除提示词\n§e  list §7- 列出所有提示词\n§e  select <名称> §7- 设置默认提示词\n§e  clear §7- 清除默认提示词\n§7权限：ollamachat.prompt.*\n§7示例：§e/ollamachat prompt set helpful \"你是一个乐于助人的助手\"",
+  "help-prompt": "§6=== /ollamachat prompt ===\n§7管理 AI 对话的自定义提示词。\n§e子命令：\n§e  set <名称> <内容> §7- 创建/更新提示词\n§e  delete <名称> §7- 删除提示词\n§e  list §7- 列出所有提示词\n§e  select <名称> §7- 设置默认提示词\n§e  clear §7- 清除默认提示词\n \n§7示例：§e/ollamachat prompt set helpful \"你是一个乐于助人的助手\"",
 
-  "help-conversation": "§6=== /ollamachat conversation ===\n§7管理 AI 对话历史。\n§e子命令：\n§e  new <AI名称> <名称> §7- 创建新对话\n§e  select <AI名称> <名称> §7- 切换对话\n§e  delete <AI名称> <名称> §7- 删除对话\n§e  list <AI名称> §7- 列出所有对话\n§7权限：ollamachat.conversation.*\n§7示例：§e/ollamachat conversation new ollama 对话交流",
+  "help-conversation": "§6=== /ollamachat conversation ===\n§7管理 AI 对话历史。\n§e子命令：\n§e  new <AI名称> <名称> §7- 创建新对话\n§e  select <AI名称> <名称> §7- 切换对话\n§e  delete <AI名称> <名称> §7- 删除对话\n§e  list <AI名称> §7- 列出所有对话\n \n§7示例：§e/ollamachat conversation new ollama 对话交流",
 
-  "help-suggests": "§6=== /ollamachat suggests ===\n§7为自己切换候选回复功能。\n§7用法：§e/ollamachat suggests <on|off>\n§7权限：ollamachat.suggests.toggle\n§7示例：§e/ollamachat suggests on",
+  "help-suggests": "§6=== /ollamachat suggests ===\n§7为自己切换候选回复功能。\n§7用法：§e/ollamachat suggests <on|off>\n \n§7示例：§e/ollamachat suggests on",
 
-  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7全局启用或禁用预设候选回复。\n§7用法：§e/ollamachat suggests-presets <on|off>\n§7权限：ollamachat.suggests-presets.toggle\n§7示例：§e/ollamachat suggests-presets off",
+  "help-suggests-presets": "§6=== /ollamachat suggests-presets ===\n§7全局启用或禁用预设候选回复。\n§7用法：§e/ollamachat suggests-presets <on|off>\n \n§7示例：§e/ollamachat suggests-presets off",
 
-  "help-search": "§6=== /ollamachat search ===\n§7管理联网搜索功能。\n§e子命令：\n§e  toggle §7- 启用/禁用联网搜索\n§e  status §7- 显示当前搜索状态\n§e  engine <bocha|brave> §7- 切换搜索引擎\n§e  query <文本> §7- 执行联网搜索\n§e  setkey <引擎> <密钥> §7- 设置引擎 API 密钥\n§e  setcount <数量> §7- 设置结果数量(1-50)\n§e  addkeyword <关键词> §7- 添加触发关键词\n§e  removekeyword <关键词> §7- 移除触发关键词\n§e  listkeywords §7- 列出所有触发关键词\n§7权限：ollamachat.search.*\n§7示例：§e/ollamachat search query Minecraft 1.21 新特性",
+  "help-search": "§6=== /ollamachat search ===\n§7管理联网搜索功能。\n§e子命令：\n§e  toggle §7- 启用/禁用联网搜索\n§e  status §7- 显示当前搜索状态\n§e  engine <bocha|brave> §7- 切换搜索引擎\n§e  query <文本> §7- 执行联网搜索\n§e  setkey <引擎> <密钥> §7- 设置引擎 API 密钥\n§e  setcount <数量> §7- 设置结果数量(1-50)\n§e  addkeyword <关键词> §7- 添加触发关键词\n§e  removekeyword <关键词> §7- 移除触发关键词\n§e  listkeywords §7- 列出所有触发关键词\n \n§7示例：§e/ollamachat search query Minecraft 1.21 新特性",
 
   "help-search-engine": "§6=== /ollamachat search engine ===\n§7切换活跃的搜索引擎。\n§7可用引擎：§eBOCHA §7(需要 API 密钥)，§eBRAVE §7(需要 API 密钥)\n§7用法：§e/ollamachat search engine <bocha|brave>\n§7示例：§e/ollamachat search engine brave",
 

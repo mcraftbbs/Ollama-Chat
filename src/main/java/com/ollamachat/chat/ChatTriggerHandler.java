@@ -3,9 +3,10 @@ package com.ollamachat.chat;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.ollamachat.AIService;
-import com.ollamachat.WebSearchService;
+import com.ollamachat.search.WebSearchService;
 import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
+import com.ollamachat.scheduler.SchedulerUtils;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
@@ -70,7 +71,7 @@ public class ChatTriggerHandler implements Listener {
                     configManager.getMessage("generating-status", null), color, style);
         }
 
-        CompletableFuture.runAsync(() -> {
+        SchedulerUtils.runAsync(plugin, () -> {
             try {
                 UUID playerUuid = player.getUniqueId();
                 // Save player info to ensure uuid exists in players table

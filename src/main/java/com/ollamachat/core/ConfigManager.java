@@ -6,10 +6,17 @@ import com.google.gson.JsonParser;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -424,7 +431,8 @@ public class ConfigManager {
             }
         }
 
-        try (FileReader reader = new FileReader(langFile)) {
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(langFile), StandardCharsets.UTF_8)) {
             langConfig = JsonParser.parseReader(reader).getAsJsonObject();
             if (langConfig == null) {
                 langConfig = new JsonObject();
@@ -446,10 +454,26 @@ public class ConfigManager {
     private void saveResourceIfNotExists(String resourcePath) {
         File targetFile = new File(plugin.getDataFolder(), resourcePath);
         if (!targetFile.exists()) {
+            // Use getResource to properly handle encoding from jar resources
             try (InputStream in = plugin.getResource(resourcePath)) {
                 if (in != null) {
                     targetFile.getParentFile().mkdirs();
-                    Files.copy(in, targetFile.toPath());
+                    // Use UTF-8 encoding when writing language files
+                    if (resourcePath.startsWith("lang/")) {
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(in, StandardCharsets.UTF_8));
+                             BufferedWriter writer = new BufferedWriter(
+                                     new OutputStreamWriter(
+                                             new FileOutputStream(targetFile), StandardCharsets.UTF_8))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                writer.write(line);
+                                writer.newLine();
+                            }
+                        }
+                    } else {
+                        Files.copy(in, targetFile.toPath());
+                    }
                     plugin.getLogger().info("Created default file: " + resourcePath);
                 }
             } catch (IOException e) {
@@ -463,7 +487,11 @@ public class ConfigManager {
             langFile.getParentFile().mkdirs();
             langFile.createNewFile();
             JsonObject emptyJson = new JsonObject();
-            Files.write(langFile.toPath(), gson.toJson(emptyJson).getBytes());
+            // Write with UTF-8 encoding
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(langFile), StandardCharsets.UTF_8)) {
+                writer.write(gson.toJson(emptyJson));
+            }
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to create empty language file: " + e.getMessage());
         }
