@@ -6,6 +6,8 @@ import com.ollamachat.AIService;
 import com.ollamachat.search.WebSearchService;
 import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
+import com.ollamachat.format.MarkdownFormatter;
+import com.ollamachat.format.MessageFormatter;
 import com.ollamachat.scheduler.SchedulerUtils;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -28,6 +30,8 @@ public class ChatTriggerHandler implements Listener {
     private final SuggestedResponseHandler suggestedResponseHandler;
     private final WebSearchService webSearchService;
     private final Gson gson;
+    private final MarkdownFormatter markdownFormatter;
+    private final MessageFormatter messageFormatter;
 
     public ChatTriggerHandler(Ollamachat plugin) {
         this.plugin = plugin;
@@ -36,6 +40,8 @@ public class ChatTriggerHandler implements Listener {
         this.suggestedResponseHandler = new SuggestedResponseHandler(plugin);
         this.webSearchService = plugin.getWebSearchService();
         this.gson = new Gson();
+        this.markdownFormatter = configManager.getMarkdownFormatter();
+        this.messageFormatter = configManager.getMessageFormatter();
     }
 
     @EventHandler
@@ -64,6 +70,7 @@ public class ChatTriggerHandler implements Listener {
             return;
         }
 
+        // Show progress bar
         if (plugin.getConfig().getBoolean("progress-display.enabled", true)) {
             BarColor color = BarColor.valueOf(plugin.getConfig().getString("progress-display.color", "BLUE"));
             BarStyle style = BarStyle.valueOf(plugin.getConfig().getString("progress-display.style", "SOLID"));
@@ -71,6 +78,7 @@ public class ChatTriggerHandler implements Listener {
                     configManager.getMessage("generating-status", null), color, style);
         }
 
+        // Use SchedulerUtils for Folia compatibility
         SchedulerUtils.runAsync(plugin, () -> {
             try {
                 UUID playerUuid = player.getUniqueId();
@@ -84,7 +92,7 @@ public class ChatTriggerHandler implements Listener {
                         ? plugin.getChatHistoryManager().getConversationId(playerUuid, aiName, conversationName)
                         : null;
 
-                //
+                // Check if web search should be performed
                 boolean shouldSearch = shouldPerformWebSearch(prompt);
                 String searchContext = "";
 
@@ -104,11 +112,12 @@ public class ChatTriggerHandler implements Listener {
                     }
                 }
 
+                // Build conversation context
                 String history = plugin.getChatHistoryManager().getChatHistory(playerUuid, aiName,
                         conversationId, configManager.getMaxHistory());
                 String selectedPrompt = configManager.getPrompts().getOrDefault(configManager.getDefaultPrompt(), "");
 
-                //
+                // Build context with or without search results
                 String context;
                 if (!searchContext.isEmpty()) {
                     String template = configManager.getWebSearchPromptTemplate();
@@ -119,6 +128,7 @@ public class ChatTriggerHandler implements Listener {
                     context = history + (selectedPrompt.isEmpty() ? "" : selectedPrompt + "\n") + "User: " + prompt;
                 }
 
+                // Get API configuration
                 String apiUrl, apiKey, model;
                 boolean isMessagesFormat;
                 if (aiName.equalsIgnoreCase("ollama")) {
@@ -134,15 +144,18 @@ public class ChatTriggerHandler implements Listener {
                     isMessagesFormat = aiConfig.isMessagesFormat();
                 }
 
+                // Send request and get response
                 String finalResponse;
                 if (configManager.isStreamingEnabled()) {
                     StringBuilder fullResponse = new StringBuilder();
                     AtomicBoolean isFirstMessage = new AtomicBoolean(true);
                     aiService.sendStreamingRequest(apiUrl, apiKey, model, context, partialResponse -> {
                         if (player.isOnline()) {
-                            String formattedPartial = partialResponse.length() > configManager.getMaxResponseLength()
-                                    ? partialResponse.substring(0, configManager.getMaxResponseLength()) + "..."
-                                    : partialResponse;
+                            // Format partial response with Markdown
+                            String formattedPartial = markdownFormatter.format(partialResponse);
+                            if (formattedPartial.length() > configManager.getMaxResponseLength()) {
+                                formattedPartial = formattedPartial.substring(0, configManager.getMaxResponseLength()) + "...";
+                            }
                             String message = isFirstMessage.get()
                                     ? configManager.getMessage("response-prefix", null) + formattedPartial
                                     : formattedPartial;
@@ -169,25 +182,30 @@ public class ChatTriggerHandler implements Listener {
                     }
                 }
 
+                // Save history and send suggestions
                 if (!finalResponse.isEmpty()) {
                     plugin.getChatHistoryManager().saveChatHistory(playerUuid, aiName, conversationId, prompt, finalResponse);
                     suggestedResponseHandler.sendSuggestedResponses(player, aiName, prompt, finalResponse);
                 }
-                plugin.getProgressManager().complete(player);
+
+                // Complete progress
+                SchedulerUtils.runOnEntity(plugin, player, () -> {
+                    plugin.getProgressManager().complete(player);
+                });
+
             } catch (Exception e) {
                 plugin.getLogger().severe("Error processing " + aiName + " request: " + e.getMessage());
                 if (player.isOnline()) {
                     sendErrorMessage(player, configManager.getMessage("error-prefix", null) +
                             configManager.getMessage("websearch-error", Map.of("error", e.getMessage())));
                 }
-                plugin.getProgressManager().error(player);
+                SchedulerUtils.runOnEntity(plugin, player, () -> {
+                    plugin.getProgressManager().error(player);
+                });
             }
         });
     }
 
-    /**
-     *
-     */
     private boolean shouldPerformWebSearch(String prompt) {
         if (!configManager.isWebSearchEnabled() || !configManager.isWebSearchAutoTrigger()) {
             return false;
@@ -203,13 +221,29 @@ public class ChatTriggerHandler implements Listener {
     }
 
     private void sendFormattedResponse(Player player, String response) {
-        if (response.length() > configManager.getMaxResponseLength()) {
-            response = response.substring(0, configManager.getMaxResponseLength()) + "...";
+        // Apply Markdown formatting
+        String formattedResponse = markdownFormatter.format(response);
+
+        // Truncate if too long
+        if (formattedResponse.length() > configManager.getMaxResponseLength()) {
+            formattedResponse = formattedResponse.substring(0, configManager.getMaxResponseLength()) + "...";
         }
-        player.sendMessage(configManager.getMessage("response-prefix", null) + response);
+
+        // Send with response prefix
+        String prefix = configManager.getMessage("response-prefix", null);
+
+        // Split long messages into multiple lines for better readability
+        String[] lines = formattedResponse.split("\n");
+        for (String line : lines) {
+            if (!line.trim().isEmpty()) {
+                player.sendMessage(prefix + line);
+            }
+        }
     }
 
     private void sendErrorMessage(Player player, String errorMessage) {
-        player.sendMessage(errorMessage);
+        // Apply message formatting
+        String formatted = messageFormatter.error(errorMessage);
+        player.sendMessage(formatted);
     }
 }

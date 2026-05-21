@@ -3,19 +3,12 @@ package com.ollamachat.core;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ollamachat.format.MarkdownFormatter;
+import com.ollamachat.format.MessageFormatter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -26,6 +19,7 @@ public class ConfigManager {
     private JsonObject langConfig;
     private String currentLanguage;
 
+    // AI Configuration
     private String ollamaApiUrl;
     private String ollamaModel;
     private List<String> triggerPrefixes;
@@ -38,6 +32,8 @@ public class ConfigManager {
     private Map<String, String> prompts;
     private Map<UUID, Map<String, String>> selectedConversations;
     private int maxHistory;
+
+    // Suggested Responses Configuration
     private List<String> suggestedResponseModels;
     private boolean suggestedResponsesEnabled;
     private int suggestedResponseCount;
@@ -47,6 +43,7 @@ public class ConfigManager {
     private int suggestedResponseCooldown;
     private boolean suggestedResponsePresetsEnabled;
 
+    // Web Search Configuration
     private boolean webSearchEnabled;
     private boolean webSearchAutoTrigger;
     private List<String> webSearchTriggerKeywords;
@@ -54,6 +51,7 @@ public class ConfigManager {
     private SearchEngine webSearchEngine;
     private String webSearchPromptTemplate;
 
+    // Bocha Search Configuration
     private String bochaApiKey;
     private boolean bochaIncludeSites;
     private List<String> bochaIncludeSitesList;
@@ -62,11 +60,17 @@ public class ConfigManager {
     private int bochaTimeRange;
     private String bochaFreshness;
 
+    // Brave Search Configuration
     private String braveApiKey;
     private String braveCountry;
     private String braveSearchLang;
     private String braveUiLang;
     private String braveSafeSearch;
+
+    // Markdown Formatting
+    private MarkdownFormatter markdownFormatter;
+    private MessageFormatter messageFormatter;
+    private boolean markdownEnabled;
 
     public enum SearchEngine {
         BOCHA("bocha"),
@@ -92,6 +96,7 @@ public class ConfigManager {
         }
     }
 
+    // Default values
     private static final String DEFAULT_OLLAMA_API_URL = "http://localhost:11434/api/generate";
     private static final String DEFAULT_OLLAMA_MODEL = "llama3";
     private static final List<String> DEFAULT_TRIGGER_PREFIXES = Arrays.asList("@bot", "@ai");
@@ -133,6 +138,12 @@ public class ConfigManager {
                     "Please provide an accurate and detailed answer based on the search results. " +
                     "If the search results are insufficient, please indicate that.";
 
+    // Markdown defaults
+    private static final boolean DEFAULT_MARKDOWN_ENABLED = true;
+    private static final boolean DEFAULT_MARKDOWN_COLORS = true;
+    private static final boolean DEFAULT_MARKDOWN_FORMATTING = true;
+    private static final int DEFAULT_MARKDOWN_MAX_LINE_LENGTH = 256;
+
     public ConfigManager(Ollamachat plugin) {
         this.plugin = plugin;
         this.gson = new Gson();
@@ -164,7 +175,10 @@ public class ConfigManager {
     private void setDefaultConfigValues() {
         FileConfiguration config = plugin.getConfig();
 
+        // Language
         config.addDefault("language", "en_us");
+
+        // Ollama settings
         config.addDefault("ollama-enabled", DEFAULT_OLLAMA_ENABLED);
         config.addDefault("ollama-api-url", DEFAULT_OLLAMA_API_URL);
         config.addDefault("model", DEFAULT_OLLAMA_MODEL);
@@ -172,8 +186,10 @@ public class ConfigManager {
         config.addDefault("max-response-length", DEFAULT_MAX_RESPONSE_LENGTH);
         config.addDefault("trigger-prefixes", DEFAULT_TRIGGER_PREFIXES);
 
+        // Streaming settings
         config.addDefault("stream-settings.enabled", DEFAULT_STREAMING_ENABLED);
 
+        // Suggested responses
         config.addDefault("suggested-response-models", Arrays.asList(DEFAULT_OLLAMA_MODEL));
         config.addDefault("suggested-responses-enabled", DEFAULT_SUGGESTED_RESPONSES_ENABLED);
         config.addDefault("suggested-response-count", DEFAULT_SUGGESTED_RESPONSE_COUNT);
@@ -182,6 +198,7 @@ public class ConfigManager {
         config.addDefault("suggested-response-presets",
                 Arrays.asList("I see what you mean.", "That's interesting!", "Tell me more about that."));
 
+        // Web search settings
         config.addDefault("web-search.enabled", DEFAULT_WEB_SEARCH_ENABLED);
         config.addDefault("web-search.auto-trigger", DEFAULT_WEB_SEARCH_AUTO_TRIGGER);
         config.addDefault("web-search.trigger-keywords", DEFAULT_WEB_SEARCH_TRIGGER_KEYWORDS);
@@ -189,6 +206,7 @@ public class ConfigManager {
         config.addDefault("web-search.engine", DEFAULT_WEB_SEARCH_ENGINE.getConfigName());
         config.addDefault("web-search.prompt-template", DEFAULT_WEB_SEARCH_PROMPT_TEMPLATE);
 
+        // Bocha search settings
         config.addDefault("web-search.bocha.api-key", DEFAULT_BOCHA_API_KEY);
         config.addDefault("web-search.bocha.include-sites", DEFAULT_BOCHA_INCLUDE_SITES);
         config.addDefault("web-search.bocha.include-sites-list", DEFAULT_BOCHA_INCLUDE_SITES_LIST);
@@ -197,12 +215,14 @@ public class ConfigManager {
         config.addDefault("web-search.bocha.time-range", DEFAULT_BOCHA_TIME_RANGE);
         config.addDefault("web-search.bocha.freshness", DEFAULT_BOCHA_FRESHNESS);
 
+        // Brave search settings
         config.addDefault("web-search.brave.api-key", DEFAULT_BRAVE_API_KEY);
         config.addDefault("web-search.brave.country", DEFAULT_BRAVE_COUNTRY);
         config.addDefault("web-search.brave.search-lang", DEFAULT_BRAVE_SEARCH_LANG);
         config.addDefault("web-search.brave.ui-lang", DEFAULT_BRAVE_UI_LANG);
         config.addDefault("web-search.brave.safe-search", DEFAULT_BRAVE_SAFE_SEARCH);
 
+        // Database settings
         config.addDefault("database.type", "sqlite");
         config.addDefault("database.mysql.host", "localhost");
         config.addDefault("database.mysql.port", 3306);
@@ -210,11 +230,18 @@ public class ConfigManager {
         config.addDefault("database.mysql.username", "root");
         config.addDefault("database.mysql.password", "");
 
+        // Progress display settings
         config.addDefault("progress-display.enabled", true);
         config.addDefault("progress-display.type", "bossbar");
         config.addDefault("progress-display.color", "BLUE");
         config.addDefault("progress-display.style", "SOLID");
         config.addDefault("progress-display.update-interval", 1);
+
+        // Markdown formatting settings
+        config.addDefault("markdown.enabled", DEFAULT_MARKDOWN_ENABLED);
+        config.addDefault("markdown.colors", DEFAULT_MARKDOWN_COLORS);
+        config.addDefault("markdown.formatting", DEFAULT_MARKDOWN_FORMATTING);
+        config.addDefault("markdown.max-line-length", DEFAULT_MARKDOWN_MAX_LINE_LENGTH);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
@@ -237,6 +264,7 @@ public class ConfigManager {
             needsSave = true;
         }
 
+        // Web search defaults
         needsSave |= checkAndAddConfig(config, "web-search.enabled", DEFAULT_WEB_SEARCH_ENABLED);
         needsSave |= checkAndAddConfig(config, "web-search.auto-trigger", DEFAULT_WEB_SEARCH_AUTO_TRIGGER);
         needsSave |= checkAndAddConfig(config, "web-search.trigger-keywords", DEFAULT_WEB_SEARCH_TRIGGER_KEYWORDS);
@@ -244,6 +272,7 @@ public class ConfigManager {
         needsSave |= checkAndAddConfig(config, "web-search.engine", DEFAULT_WEB_SEARCH_ENGINE.getConfigName());
         needsSave |= checkAndAddConfig(config, "web-search.prompt-template", DEFAULT_WEB_SEARCH_PROMPT_TEMPLATE);
 
+        // Bocha defaults
         needsSave |= checkAndAddConfig(config, "web-search.bocha.api-key", DEFAULT_BOCHA_API_KEY);
         needsSave |= checkAndAddConfig(config, "web-search.bocha.include-sites", DEFAULT_BOCHA_INCLUDE_SITES);
         needsSave |= checkAndAddConfig(config, "web-search.bocha.include-sites-list", DEFAULT_BOCHA_INCLUDE_SITES_LIST);
@@ -252,11 +281,18 @@ public class ConfigManager {
         needsSave |= checkAndAddConfig(config, "web-search.bocha.time-range", DEFAULT_BOCHA_TIME_RANGE);
         needsSave |= checkAndAddConfig(config, "web-search.bocha.freshness", DEFAULT_BOCHA_FRESHNESS);
 
+        // Brave defaults
         needsSave |= checkAndAddConfig(config, "web-search.brave.api-key", DEFAULT_BRAVE_API_KEY);
         needsSave |= checkAndAddConfig(config, "web-search.brave.country", DEFAULT_BRAVE_COUNTRY);
         needsSave |= checkAndAddConfig(config, "web-search.brave.search-lang", DEFAULT_BRAVE_SEARCH_LANG);
         needsSave |= checkAndAddConfig(config, "web-search.brave.ui-lang", DEFAULT_BRAVE_UI_LANG);
         needsSave |= checkAndAddConfig(config, "web-search.brave.safe-search", DEFAULT_BRAVE_SAFE_SEARCH);
+
+        // Markdown defaults
+        needsSave |= checkAndAddConfig(config, "markdown.enabled", DEFAULT_MARKDOWN_ENABLED);
+        needsSave |= checkAndAddConfig(config, "markdown.colors", DEFAULT_MARKDOWN_COLORS);
+        needsSave |= checkAndAddConfig(config, "markdown.formatting", DEFAULT_MARKDOWN_FORMATTING);
+        needsSave |= checkAndAddConfig(config, "markdown.max-line-length", DEFAULT_MARKDOWN_MAX_LINE_LENGTH);
 
         if (needsSave) {
             plugin.saveConfig();
@@ -277,11 +313,12 @@ public class ConfigManager {
         FileConfiguration config = plugin.getConfig();
 
         ensureConfigComplete();
-
         config = plugin.getConfig();
 
+        // Language
         currentLanguage = config.getString("language", "en_us");
 
+        // Ollama AI settings
         ollamaApiUrl = config.getString("ollama-api-url", DEFAULT_OLLAMA_API_URL);
         ollamaModel = config.getString("model", DEFAULT_OLLAMA_MODEL);
         triggerPrefixes = config.getStringList("trigger-prefixes");
@@ -294,9 +331,11 @@ public class ConfigManager {
         maxHistory = config.getInt("max-history", DEFAULT_MAX_HISTORY);
         streamingEnabled = config.getBoolean("stream-settings.enabled", DEFAULT_STREAMING_ENABLED);
 
+        // Prompts
         defaultPrompt = config.getString("default-prompt", "");
         loadPrompts(config);
 
+        // Suggested responses
         suggestedResponseModels = config.getStringList("suggested-response-models");
         if (suggestedResponseModels.isEmpty()) {
             suggestedResponseModels = Arrays.asList(DEFAULT_OLLAMA_MODEL);
@@ -309,6 +348,7 @@ public class ConfigManager {
         suggestedResponseCooldown = config.getInt("suggested-response-cooldown", DEFAULT_SUGGESTED_RESPONSE_COOLDOWN);
         suggestedResponsePresetsEnabled = config.getBoolean("suggested-response-presets-enabled", DEFAULT_SUGGESTED_RESPONSE_PRESETS_ENABLED);
 
+        // Web search
         webSearchEnabled = config.getBoolean("web-search.enabled", DEFAULT_WEB_SEARCH_ENABLED);
         webSearchAutoTrigger = config.getBoolean("web-search.auto-trigger", DEFAULT_WEB_SEARCH_AUTO_TRIGGER);
         webSearchTriggerKeywords = config.getStringList("web-search.trigger-keywords");
@@ -322,6 +362,7 @@ public class ConfigManager {
 
         webSearchPromptTemplate = config.getString("web-search.prompt-template", DEFAULT_WEB_SEARCH_PROMPT_TEMPLATE);
 
+        // Bocha settings
         bochaApiKey = config.getString("web-search.bocha.api-key", DEFAULT_BOCHA_API_KEY);
         bochaIncludeSites = config.getBoolean("web-search.bocha.include-sites", DEFAULT_BOCHA_INCLUDE_SITES);
         bochaIncludeSitesList = config.getStringList("web-search.bocha.include-sites-list");
@@ -330,18 +371,28 @@ public class ConfigManager {
         bochaTimeRange = config.getInt("web-search.bocha.time-range", DEFAULT_BOCHA_TIME_RANGE);
         bochaFreshness = config.getString("web-search.bocha.freshness", DEFAULT_BOCHA_FRESHNESS);
 
+        // Brave settings
         braveApiKey = config.getString("web-search.brave.api-key", DEFAULT_BRAVE_API_KEY);
         braveCountry = config.getString("web-search.brave.country", DEFAULT_BRAVE_COUNTRY);
         braveSearchLang = config.getString("web-search.brave.search-lang", DEFAULT_BRAVE_SEARCH_LANG);
         braveUiLang = config.getString("web-search.brave.ui-lang", DEFAULT_BRAVE_UI_LANG);
         braveSafeSearch = config.getString("web-search.brave.safe-search", DEFAULT_BRAVE_SAFE_SEARCH);
 
+        // Markdown formatting
+        markdownEnabled = config.getBoolean("markdown.enabled", DEFAULT_MARKDOWN_ENABLED);
+        boolean markdownColors = config.getBoolean("markdown.colors", DEFAULT_MARKDOWN_COLORS);
+        boolean markdownFormatting = config.getBoolean("markdown.formatting", DEFAULT_MARKDOWN_FORMATTING);
+        int markdownMaxLineLength = config.getInt("markdown.max-line-length", DEFAULT_MARKDOWN_MAX_LINE_LENGTH);
+
+        // Initialize formatters
+        markdownFormatter = new MarkdownFormatter(markdownColors, markdownFormatting, markdownMaxLineLength);
+        messageFormatter = new MessageFormatter(markdownEnabled);
+
+        // Load other AI configs and toggles
         loadOtherAIConfigs(config);
         loadSuggestedResponseToggles(config);
     }
 
-    /**
-     */
     public void reloadLanguage() {
         String newLanguage = getCurrentLanguageFromConfig();
         if (!newLanguage.equals(currentLanguage) || langConfig == null) {
@@ -354,8 +405,6 @@ public class ConfigManager {
         }
     }
 
-    /**
-     */
     private String getCurrentLanguageFromConfig() {
         return plugin.getConfig().getString("language", "en_us");
     }
@@ -431,6 +480,7 @@ public class ConfigManager {
             }
         }
 
+        // Use InputStreamReader with UTF-8 encoding for proper Chinese character support
         try (InputStreamReader reader = new InputStreamReader(
                 new FileInputStream(langFile), StandardCharsets.UTF_8)) {
             langConfig = JsonParser.parseReader(reader).getAsJsonObject();
@@ -454,7 +504,6 @@ public class ConfigManager {
     private void saveResourceIfNotExists(String resourcePath) {
         File targetFile = new File(plugin.getDataFolder(), resourcePath);
         if (!targetFile.exists()) {
-            // Use getResource to properly handle encoding from jar resources
             try (InputStream in = plugin.getResource(resourcePath)) {
                 if (in != null) {
                     targetFile.getParentFile().mkdirs();
@@ -512,6 +561,7 @@ public class ConfigManager {
         return message;
     }
 
+    // Prompts management
     public void setDefaultPrompt(String prompt) {
         this.defaultPrompt = prompt;
         plugin.getConfig().set("default-prompt", prompt);
@@ -535,12 +585,14 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    // Ollama settings
     public void setOllamaEnabled(boolean enabled) {
         this.ollamaEnabled = enabled;
         plugin.getConfig().set("ollama-enabled", enabled);
         plugin.saveConfig();
     }
 
+    // Suggested response settings
     public void setSuggestedResponsePresetsEnabled(boolean enabled) {
         this.suggestedResponsePresetsEnabled = enabled;
         plugin.getConfig().set("suggested-response-presets-enabled", enabled);
@@ -553,6 +605,7 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    // Web search settings
     public void setWebSearchEnabled(boolean enabled) {
         this.webSearchEnabled = enabled;
         plugin.getConfig().set("web-search.enabled", enabled);
@@ -583,7 +636,13 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
-    // Bocha Setter
+    public void setWebSearchPromptTemplate(String template) {
+        this.webSearchPromptTemplate = template;
+        plugin.getConfig().set("web-search.prompt-template", template);
+        plugin.saveConfig();
+    }
+
+    // Bocha setters
     public void setBochaApiKey(String apiKey) {
         this.bochaApiKey = apiKey;
         plugin.getConfig().set("web-search.bocha.api-key", apiKey);
@@ -626,7 +685,7 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
-    // Brave Setter
+    // Brave setters
     public void setBraveApiKey(String apiKey) {
         this.braveApiKey = apiKey;
         plugin.getConfig().set("web-search.brave.api-key", apiKey);
@@ -657,34 +716,15 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
-    public void setWebSearchPromptTemplate(String template) {
-        this.webSearchPromptTemplate = template;
-        plugin.getConfig().set("web-search.prompt-template", template);
+    // Markdown setters
+    public void setMarkdownEnabled(boolean enabled) {
+        this.markdownEnabled = enabled;
+        plugin.getConfig().set("markdown.enabled", enabled);
         plugin.saveConfig();
+        this.messageFormatter = new MessageFormatter(enabled);
     }
 
     // Getters
-    public boolean isWebSearchEnabled() { return webSearchEnabled; }
-    public boolean isWebSearchAutoTrigger() { return webSearchAutoTrigger; }
-    public List<String> getWebSearchTriggerKeywords() { return webSearchTriggerKeywords; }
-    public int getWebSearchResultCount() { return webSearchResultCount; }
-    public SearchEngine getWebSearchEngine() { return webSearchEngine; }
-    public String getWebSearchPromptTemplate() { return webSearchPromptTemplate; }
-
-    public String getBochaApiKey() { return bochaApiKey; }
-    public boolean isBochaIncludeSites() { return bochaIncludeSites; }
-    public List<String> getBochaIncludeSites() { return bochaIncludeSitesList; }
-    public boolean isBochaExcludeSites() { return bochaExcludeSites; }
-    public List<String> getBochaExcludeSites() { return bochaExcludeSitesList; }
-    public int getBochaTimeRange() { return bochaTimeRange; }
-    public String getBochaFreshness() { return bochaFreshness; }
-
-    public String getBraveApiKey() { return braveApiKey; }
-    public String getBraveCountry() { return braveCountry; }
-    public String getBraveSearchLang() { return braveSearchLang; }
-    public String getBraveUiLang() { return braveUiLang; }
-    public String getBraveSafeSearch() { return braveSafeSearch; }
-
     public String getCurrentLanguage() { return currentLanguage; }
     public String getOllamaApiUrl() { return ollamaApiUrl; }
     public String getOllamaModel() { return ollamaModel; }
@@ -706,6 +746,43 @@ public class ConfigManager {
     public Map<String, Boolean> getSuggestedResponseModelToggles() { return suggestedResponseModelToggles; }
     public int getSuggestedResponseCooldown() { return suggestedResponseCooldown; }
     public boolean isSuggestedResponsePresetsEnabled() { return suggestedResponsePresetsEnabled; }
+
+    // Web search getters
+    public boolean isWebSearchEnabled() { return webSearchEnabled; }
+    public boolean isWebSearchAutoTrigger() { return webSearchAutoTrigger; }
+    public List<String> getWebSearchTriggerKeywords() { return webSearchTriggerKeywords; }
+    public int getWebSearchResultCount() { return webSearchResultCount; }
+    public SearchEngine getWebSearchEngine() { return webSearchEngine; }
+    public String getWebSearchPromptTemplate() { return webSearchPromptTemplate; }
+
+    // Bocha getters
+    public String getBochaApiKey() { return bochaApiKey; }
+    public boolean isBochaIncludeSites() { return bochaIncludeSites; }
+    public List<String> getBochaIncludeSites() { return bochaIncludeSitesList; }
+    public boolean isBochaExcludeSites() { return bochaExcludeSites; }
+    public List<String> getBochaExcludeSites() { return bochaExcludeSitesList; }
+    public int getBochaTimeRange() { return bochaTimeRange; }
+    public String getBochaFreshness() { return bochaFreshness; }
+
+    // Brave getters
+    public String getBraveApiKey() { return braveApiKey; }
+    public String getBraveCountry() { return braveCountry; }
+    public String getBraveSearchLang() { return braveSearchLang; }
+    public String getBraveUiLang() { return braveUiLang; }
+    public String getBraveSafeSearch() { return braveSafeSearch; }
+
+    // Markdown getters
+    public MarkdownFormatter getMarkdownFormatter() {
+        return markdownFormatter;
+    }
+
+    public MessageFormatter getMessageFormatter() {
+        return messageFormatter;
+    }
+
+    public boolean isMarkdownEnabled() {
+        return markdownEnabled;
+    }
 
     public static class AIConfig {
         private final String apiUrl;

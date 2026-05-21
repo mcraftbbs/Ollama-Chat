@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.1-blue)
 # OllamaChat
 [![Download](https://github.com/gabrielvicenteYT/modrinth-icons/blob/main/Branding/Badge/badge-dark.svg)](https://modrinth.com/plugin/ollama-chat)
 ## Overview
@@ -137,7 +137,29 @@ trigger-prefixes:
 
 stream-settings:
   # Enable streaming responses
+  # If you experience abnormal sentence breaks, try disabling this feature. This will be improved in the future.
+  enabled: false
+
+# ============================================================
+# Markdown Formatting Settings
+# ============================================================
+
+markdown:
+  # Enable Markdown formatting for AI responses
+  # When enabled, AI responses will be formatted with Minecraft colors and styles
   enabled: true
+
+  # Enable color formatting in Markdown conversion
+  # Colors are used for headers, links, code blocks, etc.
+  colors: true
+
+  # Enable text formatting in Markdown conversion
+  # Includes bold, italic, strikethrough, etc.
+  formatting: true
+
+  # Maximum line length before text wrapping
+  # Prevents chat messages from being too long
+  max-line-length: 256
 
 # ============================================================
 # Prompt Settings

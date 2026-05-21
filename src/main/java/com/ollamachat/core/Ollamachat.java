@@ -13,6 +13,8 @@ import com.ollamachat.command.AIChatCommand;
 import com.ollamachat.command.OllamaChatCommand;
 import com.ollamachat.command.OllamaChatTabCompleter;
 import com.ollamachat.search.WebSearchService;
+import com.ollamachat.format.MarkdownFormatter;
+import com.ollamachat.format.MessageFormatter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -134,6 +136,14 @@ public class Ollamachat extends JavaPlugin {
 
     public WebSearchService getWebSearchService() {
         return webSearchService;
+    }
+
+    public MarkdownFormatter getMarkdownFormatter() {
+        return configManager.getMarkdownFormatter();
+    }
+
+    public MessageFormatter getMessageFormatter() {
+        return configManager.getMessageFormatter();
     }
 
     public Map<UUID, Boolean> getPlayerSuggestionToggles() {
