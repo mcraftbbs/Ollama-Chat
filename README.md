@@ -33,8 +33,8 @@ Type `@bot` or `@ai` followed by your message in Minecraft chat to interact with
 | Command | Permission | Description |
 |---------|------------|-------------|
 | `/ollamachat reload` | `ollamachat.reload` | Reloads plugin configuration and language files. |
-| `/ollamachat help` | Shows general command list. |
-| `/ollamachat help <command>` | Shows detailed help for a specific command. |
+| `/ollamachat help` | `ollamachat.use` |Shows general command list. |
+| `/ollamachat help <command>` | `ollamachat.use` |Shows detailed help for a specific command. |
 | `/ollamachat toggle <ai-name>` | `ollamachat.toggle` | Enables/disables specified AI service. |
 | `/aichat <ai-name> <prompt>` | `ollamachat.use` | Interacts with other AI services. |
 | `/ollamachat prompt set <promptName> <promptContent>` | `ollamachat.prompt.set` | Creates a new prompt. |
