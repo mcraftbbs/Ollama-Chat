@@ -5,8 +5,13 @@ import com.google.gson.JsonObject;
 import com.ollamachat.AIService;
 import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
+import com.ollamachat.format.MarkdownFormatter;
+import com.ollamachat.scheduler.SchedulerUtils;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -14,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class SuggestedResponseHandler {
     private final Ollamachat plugin;
@@ -22,6 +26,7 @@ public class SuggestedResponseHandler {
     private final AIService aiService;
     private final Gson gson;
     private final Map<UUID, Long> lastSuggestionTimes;
+    private final MarkdownFormatter markdownFormatter;
 
     public SuggestedResponseHandler(Ollamachat plugin) {
         this.plugin = plugin;
@@ -29,6 +34,7 @@ public class SuggestedResponseHandler {
         this.aiService = new AIService();
         this.gson = new Gson();
         this.lastSuggestionTimes = new HashMap<>();
+        this.markdownFormatter = configManager.getMarkdownFormatter();
     }
 
     public boolean isSuggestionsEnabledForPlayer(Player player) {
@@ -43,6 +49,7 @@ public class SuggestedResponseHandler {
     public boolean canGenerateSuggestions(Player player) {
         int cooldown = configManager.getSuggestedResponseCooldown();
         if (cooldown <= 0) return true;
+
         long currentTime = System.currentTimeMillis();
         Long lastTime = lastSuggestionTimes.get(player.getUniqueId());
         if (lastTime == null || (currentTime - lastTime) / 1000 >= cooldown) {
@@ -52,8 +59,12 @@ public class SuggestedResponseHandler {
         return false;
     }
 
-    public void sendSuggestedResponses(Player player, String originalAIName, String originalPrompt, String originalResponse) {
-        if (!configManager.isSuggestedResponsesEnabled() || !isSuggestionsEnabledForPlayer(player)) return;
+    public void sendSuggestedResponses(Player player, String originalAIName,
+                                       String originalPrompt, String originalResponse) {
+        if (!configManager.isSuggestedResponsesEnabled() || !isSuggestionsEnabledForPlayer(player)) {
+            return;
+        }
+
         if (!canGenerateSuggestions(player)) {
             int cooldown = configManager.getSuggestedResponseCooldown();
             long lastTime = lastSuggestionTimes.get(player.getUniqueId());
@@ -64,20 +75,27 @@ public class SuggestedResponseHandler {
         }
 
         List<String> suggestedResponses = new ArrayList<>();
+
+        // Add preset responses if enabled
         if (configManager.isSuggestedResponsePresetsEnabled()) {
             suggestedResponses.addAll(configManager.getSuggestedResponsePresets());
         }
 
+        // Generate AI-suggested responses
         List<String> suggestedModels = configManager.getSuggestedResponseModels();
         if (!suggestedModels.isEmpty()) {
-            CompletableFuture.runAsync(() -> {
+            // Use SchedulerUtils for Folia compatibility
+            SchedulerUtils.runAsync(plugin, () -> {
                 for (String model : suggestedModels) {
                     if (model.equalsIgnoreCase(originalAIName)) continue;
                     if (!configManager.getSuggestedResponseModelToggles().getOrDefault(model, true)) continue;
+
                     try {
                         String apiUrl;
                         String apiKey;
                         boolean isMessagesFormat;
+
+                        // Determine which API to use for this model
                         ConfigManager.AIConfig aiConfig = configManager.getOtherAIConfigs().get(model);
                         if (aiConfig != null && configManager.getOtherAIEnabled().getOrDefault(model, false)) {
                             apiUrl = aiConfig.getApiUrl();
@@ -88,12 +106,19 @@ public class SuggestedResponseHandler {
                             apiKey = null;
                             isMessagesFormat = false;
                         }
+
+                        // Build the suggestion prompt
                         String promptTemplate = configManager.getSuggestedResponsePrompt();
                         String context = promptTemplate
                                 .replace("{prompt}", originalPrompt)
                                 .replace("{response}", originalResponse)
                                 .replace("{count}", String.valueOf(configManager.getSuggestedResponseCount()));
-                        String responseBody = aiService.sendRequest(apiUrl, apiKey, model, context, isMessagesFormat).join();
+
+                        // Get suggestions from AI
+                        String responseBody = aiService.sendRequest(
+                                apiUrl, apiKey, model, context, isMessagesFormat
+                        ).join();
+
                         String suggestedText;
                         if (isMessagesFormat) {
                             JsonObject json = gson.fromJson(responseBody, JsonObject.class);
@@ -105,43 +130,75 @@ public class SuggestedResponseHandler {
                             JsonObject json = gson.fromJson(responseBody, JsonObject.class);
                             suggestedText = json.get("response").getAsString();
                         }
+
+                        // Parse individual suggestions
                         String[] suggestions = suggestedText.split("\n");
                         for (String suggestion : suggestions) {
                             String cleanedSuggestion = suggestion.replaceAll("^\\d+\\.\\s*", "").trim();
                             if (!cleanedSuggestion.isEmpty()) {
+                                // Apply Markdown formatting to clean the suggestion
+                                cleanedSuggestion = markdownFormatter.format(cleanedSuggestion);
                                 suggestedResponses.add("[" + model + "] " + cleanedSuggestion);
                             }
                         }
                     } catch (Exception e) {
-                        plugin.getLogger().warning("Failed to get suggested response from " + model + ": " + e.getMessage());
+                        plugin.getLogger().warning(
+                                "Failed to get suggested response from " + model + ": " + e.getMessage()
+                        );
                     }
                 }
 
-                if (player.isOnline() && !suggestedResponses.isEmpty()) {
-                    sendMessage(player, ChatColor.GREEN + configManager.getMessage("suggested-responses-header", null));
-                    for (String response : suggestedResponses) {
-                        if (response.length() > configManager.getMaxResponseLength()) {
-                            response = response.substring(0, configManager.getMaxResponseLength()) + "...";
-                            sendMessage(player, ChatColor.YELLOW + configManager.getMessage("response-truncated", null));
+                // Send suggestions to player on the server thread
+                final List<String> finalResponses = new ArrayList<>(suggestedResponses);
+                SchedulerUtils.runOnEntity(plugin, player, () -> {
+                    if (player.isOnline() && !finalResponses.isEmpty()) {
+                        // Send header
+                        sendMessage(player, ChatColor.GREEN +
+                                configManager.getMessage("suggested-responses-header", null));
+
+                        // Send each suggestion
+                        for (int i = 0; i < Math.min(finalResponses.size(),
+                                configManager.getSuggestedResponseCount()); i++) {
+                            String response = finalResponses.get(i);
+
+                            // Truncate if too long
+                            if (response.length() > configManager.getMaxResponseLength()) {
+                                response = response.substring(0, configManager.getMaxResponseLength()) + "...";
+                                sendMessage(player, ChatColor.YELLOW +
+                                        configManager.getMessage("response-truncated", null));
+                            }
+
+                            // Create clickable message component
+                            String displayText = configManager.getMessage("suggested-response-prefix", null) + response;
+
+                            // Clean response for command (escape special characters)
+                            String cleanResponse = response.replace("\\", "\\\\").replace("\"", "\\\"");
+                            String command = "/aichat " + originalAIName + " " + cleanResponse;
+                            String hoverText = configManager.getMessage("suggested-response-hover", null);
+
+                            sendClickableMessage(player, displayText, command, hoverText);
                         }
-                        sendClickableMessage(player,
-                                configManager.getMessage("suggested-response-prefix", null) + response,
-                                "/aichat " + originalAIName + " " + response.replace("\"", "\\\""),
-                                configManager.getMessage("suggested-response-hover", null));
                     }
-                }
+                });
             });
         } else if (player.isOnline() && !suggestedResponses.isEmpty()) {
-            sendMessage(player, ChatColor.GREEN + configManager.getMessage("suggested-responses-header", null));
+            // Send only preset suggestions
+            sendMessage(player, ChatColor.GREEN +
+                    configManager.getMessage("suggested-responses-header", null));
+
             for (String response : suggestedResponses) {
                 if (response.length() > configManager.getMaxResponseLength()) {
                     response = response.substring(0, configManager.getMaxResponseLength()) + "...";
-                    sendMessage(player, ChatColor.YELLOW + configManager.getMessage("response-truncated", null));
+                    sendMessage(player, ChatColor.YELLOW +
+                            configManager.getMessage("response-truncated", null));
                 }
-                sendClickableMessage(player,
-                        configManager.getMessage("suggested-response-prefix", null) + response,
-                        "/aichat " + originalAIName + " " + response.replace("\"", "\\\""),
-                        configManager.getMessage("suggested-response-hover", null));
+
+                String displayText = configManager.getMessage("suggested-response-prefix", null) + response;
+                String cleanResponse = response.replace("\\", "\\\\").replace("\"", "\\\"");
+                String command = "/aichat " + originalAIName + " " + cleanResponse;
+                String hoverText = configManager.getMessage("suggested-response-hover", null);
+
+                sendClickableMessage(player, displayText, command, hoverText);
             }
         }
     }
@@ -153,11 +210,29 @@ public class SuggestedResponseHandler {
     }
 
     private void sendClickableMessage(Player player, String text, String command, String hoverText) {
-        TextComponent message = new TextComponent(text);
-        message.setColor(ChatColor.WHITE);
-        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
-        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(hoverText).color(ChatColor.YELLOW).create()));
-        player.spigot().sendMessage(message);
+        if (!player.isOnline()) {
+            return;
+        }
+
+        try {
+            // Create the main text component
+            TextComponent message = new TextComponent(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(text));
+
+            // Set the click event to run the command
+            message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+
+            // Set the hover event to show the hint
+            message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder(hoverText)
+                            .color(ChatColor.YELLOW)
+                            .create()));
+
+            // Send using Spigot's sendMessage method
+            player.spigot().sendMessage(message);
+        } catch (Exception e) {
+            // Fallback: send as plain text if component creation fails
+            plugin.getLogger().warning("Failed to send clickable message: " + e.getMessage());
+            player.sendMessage(text);
+        }
     }
 }
