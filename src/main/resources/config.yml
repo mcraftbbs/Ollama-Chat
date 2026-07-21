@@ -34,7 +34,7 @@ trigger-prefixes:
 stream-settings:
   # Enable streaming responses
   # If you experience abnormal sentence breaks, try disabling this feature. This will be improved in the future.
-  enabled: false
+  enabled: true
 
 # ============================================================
 # Markdown Formatting Settings

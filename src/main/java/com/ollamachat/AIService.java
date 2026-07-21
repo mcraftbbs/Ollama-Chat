@@ -117,12 +117,11 @@ public class AIService {
 
                 if (response.statusCode() == 200) {
                     StringBuilder buffer = new StringBuilder();
-                    int minBufferLength = 50; // Minimum length before sending
                     String[] lines = response.body().split("\n");
                     for (String line : lines) {
                         if (!line.trim().isEmpty()) {
                             if (isMessagesFormat && line.startsWith("data: ")) {
-                                String jsonData = line.substring(6); // Remove "data: " prefix
+                                String jsonData = line.substring(6);
                                 if (jsonData.equals("[DONE]")) continue;
                                 JsonObject json = gson.fromJson(jsonData, JsonObject.class);
                                 if (json.has("choices")) {
@@ -140,16 +139,9 @@ public class AIService {
                                 }
                             }
 
-                            // Check if buffer ends with a sentence boundary or is long enough
-                            String currentBuffer = buffer.toString();
-                            if (currentBuffer.endsWith(".") || currentBuffer.endsWith("?") ||
-                                    currentBuffer.endsWith("!") || currentBuffer.length() >= minBufferLength) {
-                                responseConsumer.accept(currentBuffer);
-                                buffer.setLength(0); // Clear buffer
-                            }
+                            flushBufferAtNaturalBoundaries(buffer, responseConsumer);
                         }
                     }
-                    // Send any remaining content in the buffer
                     if (buffer.length() > 0) {
                         responseConsumer.accept(buffer.toString());
                     }
@@ -160,5 +152,58 @@ public class AIService {
                 throw new RuntimeException("Failed to get streaming response from AI: " + e.getMessage(), e);
             }
         });
+    }
+
+    private void flushBufferAtNaturalBoundaries(StringBuilder buffer, Consumer<String> responseConsumer) {
+        String current = buffer.toString();
+        if (current.isEmpty()) {
+            return;
+        }
+
+        int flushPoint = findFlushPoint(current);
+        if (flushPoint <= 0) {
+            return;
+        }
+
+        String toFlush = current.substring(0, flushPoint);
+        String remaining = current.substring(flushPoint);
+        responseConsumer.accept(toFlush);
+        buffer.setLength(0);
+        buffer.append(remaining);
+    }
+
+    private int findFlushPoint(String text) {
+        int textLen = text.length();
+
+        int paraBreak = text.indexOf("\n\n");
+        if (paraBreak >= 0) {
+            return paraBreak + 2;
+        }
+
+        for (int i = 0; i < textLen - 1; i++) {
+            char c = text.charAt(i);
+            if ((c == '.' || c == '?' || c == '!' || c == ':') && i + 1 < textLen) {
+                char next = text.charAt(i + 1);
+                if (next == ' ' || next == '\n') {
+                    return i + 2;
+                }
+            }
+        }
+
+        char lastChar = text.charAt(textLen - 1);
+        if ((lastChar == '.' || lastChar == '?' || lastChar == '!' || lastChar == ':' || lastChar == '\n')
+                && textLen >= 30) {
+            return textLen;
+        }
+
+        if (textLen >= 300) {
+            int lastSpace = text.lastIndexOf(" ");
+            if (lastSpace > 80) {
+                return lastSpace;
+            }
+            return 300;
+        }
+
+        return -1;
     }
 }

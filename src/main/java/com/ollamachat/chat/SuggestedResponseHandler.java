@@ -7,11 +7,7 @@ import com.ollamachat.core.ConfigManager;
 import com.ollamachat.core.Ollamachat;
 import com.ollamachat.format.MarkdownFormatter;
 import com.ollamachat.scheduler.SchedulerUtils;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -27,6 +23,7 @@ public class SuggestedResponseHandler {
     private final Gson gson;
     private final Map<UUID, Long> lastSuggestionTimes;
     private final MarkdownFormatter markdownFormatter;
+    private final ClickableMessageSender clickableSender;
 
     public SuggestedResponseHandler(Ollamachat plugin) {
         this.plugin = plugin;
@@ -35,6 +32,17 @@ public class SuggestedResponseHandler {
         this.gson = new Gson();
         this.lastSuggestionTimes = new HashMap<>();
         this.markdownFormatter = configManager.getMarkdownFormatter();
+        this.clickableSender = createClickableSender();
+    }
+
+    private ClickableMessageSender createClickableSender() {
+        try {
+            Class.forName("net.md_5.bungee.api.chat.TextComponent");
+            Class.forName("net.md_5.bungee.api.chat.ClickEvent");
+            return new SpigotClickableSender();
+        } catch (ClassNotFoundException e) {
+            return new BukkitClickableSender();
+        }
     }
 
     public boolean isSuggestionsEnabledForPlayer(Player player) {
@@ -210,29 +218,6 @@ public class SuggestedResponseHandler {
     }
 
     private void sendClickableMessage(Player player, String text, String command, String hoverText) {
-        if (!player.isOnline()) {
-            return;
-        }
-
-        try {
-            // Create the main text component
-            TextComponent message = new TextComponent(net.md_5.bungee.api.chat.TextComponent.fromLegacyText(text));
-
-            // Set the click event to run the command
-            message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
-
-            // Set the hover event to show the hint
-            message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder(hoverText)
-                            .color(ChatColor.YELLOW)
-                            .create()));
-
-            // Send using Spigot's sendMessage method
-            player.spigot().sendMessage(message);
-        } catch (Exception e) {
-            // Fallback: send as plain text if component creation fails
-            plugin.getLogger().warning("Failed to send clickable message: " + e.getMessage());
-            player.sendMessage(text);
-        }
+        clickableSender.sendClickableMessage(player, text, command, hoverText);
     }
 }
